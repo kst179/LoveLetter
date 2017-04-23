@@ -2,4 +2,4 @@
 
 version 1.0.0
 
-Telegram bot game vertion of the card game LoveLetter
+Telegram bot game version of the card game LoveLetter
