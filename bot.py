@@ -121,7 +121,13 @@ def show_users(message):
         return
     users = 'Оставшиеся игроки: \n'
     for user in game.users.users:
-        users += ' - {}\n'.format(user.name)
+        users += ' - {} '.format(user.name)
+        if user.defence:
+            users += '⬢ '
+        if user == game.dealer:
+            users += '⮜'
+        users += '\n'
+
     bot.send_message(message.chat.id, users)
 
 
