@@ -4,6 +4,7 @@ from cardclasses import card_names
 import telebot
 import time
 from telebot import types
+import numpy as np
 
 bot = telebot.TeleBot(config.token)
 game = None
@@ -40,7 +41,7 @@ def show_hint(message):
 4. Служанка (x2) - сбросив Служанку получаете защиту на следующий круг
 3. Барон (x2) - сравните свою карту с другим игроком, у кого значение меньше - тот вылетает из игры
 2. Священник (x2) - позволяет посмотреть карту другого игрока
-1. Стражница (x5) - назовите карту другого игрока, (не стражницу), если угадаете - он вылетет из игры
+1. Стражница (x5) - назовите карту другого игрока (не стражницу), если угадаете - он вылетет из игры
 '''
     bot.send_message(message.chat.id, hints)
 
@@ -106,8 +107,9 @@ def show_cards(message):
         print('game is None')
         return
     used_cards = 'Сброшенные карты:\n'
-    for card in sorted(game.used_cards):
-        used_cards += ' - {}\n'.format(card.name)
+    unique_used_cards = np.unique(sorted(game.used_cards), return_counts=True)
+    for num, card in enumerate(unique_used_cards[0]):
+        used_cards += ' - {:10s} [{}]\n'.format(card.name, unique_used_cards[1][num])
     bot.send_message(message.chat.id, used_cards)
 
 
