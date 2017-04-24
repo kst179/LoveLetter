@@ -1,5 +1,5 @@
 card_names = ['Принцесса', 'Графиня', 'Король', 'Принц', 'Служанка', 'Барон', 'Священник', 'Стражница']
-
+from telebot import types
 
 class Card:
     value = None
@@ -31,8 +31,10 @@ class Princess(Card):
     value = 8
 
     def activate(self, game):
+        markup = types.ReplyKeyboardRemove(selective=False)
         game.bot.send_message(game.group_chat, '@{} сбросил Принцессу и проиграл.'.format(self.owner.name))
-        game.bot.send_message(self.owner.uid, '@{} сбросил Принцессу и проиграл.'.format(self.owner.name))
+        game.bot.send_message(self.owner.uid, '@{} сбросил Принцессу и проиграл.'.format(self.owner.name),
+                              reply_markup=markup)
         game.used_cards.append(self.owner.card)
         game.users.kill(self.owner)
 
@@ -42,8 +44,9 @@ class Countess(Card):
     value = 7
 
     def activate(self, game):
+        markup = types.ReplyKeyboardRemove(selective=False)
         game.bot.send_message(game.group_chat, '@{} сбросил Графиню.'.format(self.owner.name))
-        game.bot.send_message(self.owner.uid, '@{} сбросил Графиню.'.format(self.owner.name))
+        game.bot.send_message(self.owner.uid, '@{} сбросил Графиню.'.format(self.owner.name), reply_markup=markup)
 
 
 class King(Card):
@@ -52,12 +55,14 @@ class King(Card):
     need_victim = True
 
     def activate(self, game):
+        markup = types.ReplyKeyboardRemove(selective=False)
         game.bot.send_message(game.group_chat,
                               '@{} использовал Короля чтобы обменяться с @{} картами.'.format(self.owner.name,
                                                                                               game.victim.name))
         game.bot.send_message(self.owner.uid,
                               '@{} использовал Короля чтобы обменяться с @{} картами.'.format(self.owner.name,
-                                                                                              game.victim.name))
+                                                                                              game.victim.name),
+                              reply_markup=markup)
         
         game.bot.send_message(game.dealer.uid, 'Вы получили карту "{}" от @{}'.format(game.victim.card.name,
                                                                                       game.victim.name))
@@ -75,6 +80,7 @@ class Prince(Card):
     need_victim = True
 
     def activate(self, game):
+        markup = types.ReplyKeyboardRemove(selective=False)
         game.used_cards.append(game.victim.card)
         if game.victim.card.name == 'Принцесса':
             game.bot.send_message(game.group_chat,
@@ -82,7 +88,8 @@ class Prince(Card):
                                   '@{1} Сбрасывает Принцессу и проигрывает.'.format(self.owner.name, game.victim.name))
             game.bot.send_message(self.owner.uid,
                                   '@{0} использовал Принца против @{1}. '
-                                  '@{1} Сбрасывает Принцессу и проигрывает.'.format(self.owner.name, game.victim.name))
+                                  '@{1} Сбрасывает Принцессу и проигрывает.'.format(self.owner.name, game.victim.name),
+                                  reply_markup=markup)
             game.users.kill(game.victim)
             return
 
@@ -93,7 +100,8 @@ class Prince(Card):
         game.bot.send_message(self.owner.uid,
                               '@{0} использовал Принца против @{1}. У @{1} был(а) {2}.'.format(self.owner.name,
                                                                                                game.victim.name,
-                                                                                               game.victim.card.name))
+                                                                                               game.victim.card.name),
+                              reply_markup=markup)
         if len(game.deck) == 0:
             game.deck.append(game.first_card)
 
@@ -105,8 +113,10 @@ class Maid(Card):
     value = 4
 
     def activate(self, game):
+        markup = types.ReplyKeyboardRemove(selective=False)
         game.bot.send_message(game.group_chat, '@{} защищен Служанкой в течение круга.'.format(self.owner.name))
-        game.bot.send_message(self.owner.uid, '@{} защищен Служанкой в течение круга.'.format(self.owner.name))
+        game.bot.send_message(self.owner.uid, '@{} защищен Служанкой в течение круга.'.format(self.owner.name),
+                              reply_markup=markup)
         self.owner.defence = True
 
 
@@ -116,6 +126,7 @@ class Baron(Card):
     need_victim = True
 
     def activate(self, game):
+        markup = types.ReplyKeyboardRemove(selective=False)
         if self.owner.card > game.victim.card:
             game.bot.send_message(game.group_chat,
                                   '@{0} использует Барона против @{1} и выигрывает. '
@@ -124,7 +135,8 @@ class Baron(Card):
             game.bot.send_message(self.owner.uid,
                                   '@{0} использует Барона против @{1} и выигрывает. '
                                   'У @{1} оказалась карта "{2}"'.format(self.owner.name,
-                                                                        game.victim.name, game.victim.card.name))
+                                                                        game.victim.name, game.victim.card.name),
+                                  reply_markup=markup)
             game.used_cards.append(game.victim.card)
             game.users.kill(game.victim)
         elif self.owner.card < game.victim.card:
@@ -135,7 +147,8 @@ class Baron(Card):
             game.bot.send_message(self.owner.uid,
                                   '@{0} использует Барона против @{1}, но проигрывает. '
                                   'у {0} оказалась карта "{2}"'.format(self.owner.name,
-                                                                       game.victim.name, self.owner.card.name))
+                                                                       game.victim.name, self.owner.card.name),
+                                  reply_markup=markup)
             game.used_cards.append(self.owner.card)
             game.users.kill(self.owner)
         else:
@@ -144,7 +157,8 @@ class Baron(Card):
                                   'Барон уходит впустую.'.format(self.owner.name, game.victim.name))
             game.bot.send_message(self.owner.uid,
                                   'похоже у @{} и @{} одинаковые карты... '
-                                  'Барон уходит впустую.'.format(self.owner.name, game.victim.name))
+                                  'Барон уходит впустую.'.format(self.owner.name, game.victim.name),
+                                  reply_markup=markup)
 
 
 class Priest(Card):
@@ -153,12 +167,14 @@ class Priest(Card):
     need_victim = True
 
     def activate(self, game):
+        markup = types.ReplyKeyboardRemove(selective=False)
         game.bot.send_message(game.group_chat,
                               '@{} сбрасывает Священника и смотрит карту @{}.'.format(self.owner.name,
                                                                                       game.victim.name))
         game.bot.send_message(self.owner.uid,
                               '@{} сбрасывает Священника и смотрит карту @{}.'.format(self.owner.name,
-                                                                                      game.victim.name))
+                                                                                      game.victim.name),
+                              reply_markup=markup)
         game.bot.send_message(self.owner.uid,
                               '@{} показывает Вам свою карту. У него(нее) {}.'.format(game.victim.name,
                                                                                       game.victim.card.name))
@@ -171,6 +187,7 @@ class Guard(Card):
     need_guess = True
 
     def activate(self, game):
+        markup = types.ReplyKeyboardRemove(selective=False)
         if game.victim.card.name == game.guess:
             game.bot.send_message(game.group_chat,
                                   '@{} использует Стражницу и угадывает что у @{} {}.'.format(self.owner.name,
@@ -179,7 +196,8 @@ class Guard(Card):
             game.bot.send_message(self.owner.uid,
                                   '@{} использует Стражницу и угадывает что у @{} {}.'.format(self.owner.name,
                                                                                               game.victim.name,
-                                                                                              game.guess))
+                                                                                              game.guess),
+                                  reply_markup=markup)
             game.used_cards.append(game.victim.card)
             game.users.kill(game.victim)
         else:
@@ -192,4 +210,5 @@ class Guard(Card):
                                   '@{} использует Стражницу, предполагая '
                                   'что у @{} {}, но не угадывает.'.format(self.owner.name,
                                                                           game.victim.name,
-                                                                          game.guess))
+                                                                          game.guess),
+                                  reply_markup=markup)

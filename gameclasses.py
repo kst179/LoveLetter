@@ -70,8 +70,8 @@ class Game:
             for i, card in enumerate(reversed(sorted(cards))):
                 results += '{}. {} - {} ({})\n'.format(i+1, card.owner.name, card.name, card.value)
 
-            markup = types.ReplyKeyboardRemove(selective=False)
-            self.bot.send_message(self.group_chat, results, reply_markup=markup)
+
+            self.bot.send_message(self.group_chat, results)
 
             self.bot.send_message(winner.uid, 'Вы выиграли!')
             for user in self.users.users:
@@ -88,8 +88,7 @@ class Game:
         self.dealer = self.users.next()
         self.dealer.defence = False
 
-        markup = types.ReplyKeyboardRemove(selective=False)
-        self.bot.send_message(self.group_chat, 'Ходит игрок @{}'.format(self.dealer.name), reply_markup=markup)
+        self.bot.send_message(self.group_chat, 'Ходит игрок @{}'.format(self.dealer.name))
         self.dealer.take_new_card(self.deck)
 
         markup = types.ReplyKeyboardMarkup(row_width=2)
@@ -112,6 +111,8 @@ class Game:
             self.dealer.new_card, self.dealer.card = self.dealer.card, self.dealer.new_card
         
         if self.dealer.new_card.need_victim:
+            self.state = 'select_victim'
+
             markup = types.ReplyKeyboardMarkup()
             self.no_victims = True
             for user in self.users.users:
@@ -126,14 +127,13 @@ class Game:
 
             self.bot.send_message(self.dealer.private_chat,
                                   'Выберите против кого использовать карту:', reply_markup=markup)
-            self.state = 'select_victim'
             return
+        self.state = 'change_turn'
 
         active_card = self.dealer.new_card
         self.dealer.new_card = None
         self.used_cards.append(active_card)
         active_card.activate(self)
-        self.state = 'change_turn'
         self.check_end()
 
     def select_victim(self, victim_name):
@@ -145,32 +145,33 @@ class Game:
                 self.victim = user
 
         if self.dealer.new_card.need_guess:
+            self.state = 'guess_card'
+
             markup = types.ReplyKeyboardMarkup()
             for card in card_names[:-1]:
                 button = types.KeyboardButton(card)
                 markup.add(button)
             self.bot.send_message(self.dealer.private_chat,
                                   'Угадайте карту @{}:'.format(self.victim.name), reply_markup=markup)
-            self.state = 'guess_card'
             return
+        self.state = 'change_turn'
 
         active_card = self.dealer.new_card
         self.dealer.new_card = None
         self.used_cards.append(active_card)
         active_card.activate(self)
-        self.state = 'change_turn'
         self.check_end()
 
     def guess_card(self, guess):
         if self.state != 'guess_card':
             return
+        self.state = 'change_turn'
 
         self.guess = guess
         active_card = self.dealer.new_card
         self.dealer.new_card = None
         self.used_cards.append(active_card)
         active_card.activate(self)
-        self.state = 'change_turn'
         self.check_end()
 
     def end(self):
