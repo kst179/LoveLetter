@@ -52,7 +52,10 @@ class Game:
             user.take_card(self.deck)
         self.started = True
         self.state = 'change_turn'
-        self.bot.send_message(self.group_chat, 'Игра началась.')
+        users = 'Игра началась.\nПорядок игроков:\n'
+        for user in self.users.users:
+            users += ' - {}\n'.format(user.name)
+        self.bot.send_message(self.group_chat, users)
 
     def check_end(self):
         if len(self.users.users) == 1 or len(self.deck) == 0:
