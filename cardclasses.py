@@ -54,6 +54,7 @@ class King(Card):
                               '@{} использовал Короля чтобы обменяться с @{} картами.'.format(self.owner.name,
                                                                                               game.victim.name))
         self.owner.card, game.victim.card = game.victim.card, self.owner.card
+        self.owner, game.victim.card.owner = game.victim.card.owner, self.owner
         game.bot.send_message(self.owner.uid, 'Вам получили карту "{}" от @{}'.format(self.owner.card.name,
                                                                                       game.victim.name))
         game.bot.send_message(game.victim.uid, 'Вы получили карту "{}" от @{}'.format(game.victim.card.name,
