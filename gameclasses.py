@@ -90,10 +90,10 @@ class Game:
 
         self.bot.send_message(self.group_chat, 'Ходит игрок @{}'.format(self.dealer.name))
         self.dealer.take_new_card(self.deck)
-        if len(self.deck > 0):
+        if len(self.deck) > 0:
             self.bot.send_message(self.group_chat, 'В колоде осталось {} карт.'.format(len(self.deck)))
         else:
-            self.bot.send_message(self.group_chat, 'Внимание! Последний ход.'.format(len(self.deck)))
+            self.bot.send_message(self.group_chat, 'Внимание! Последний ход.')
 
         markup = types.ReplyKeyboardMarkup(row_width=2)
         button1 = types.KeyboardButton(self.dealer.card.name)
