@@ -123,9 +123,9 @@ def show_users(message):
     for user in game.users.users:
         users += ' - {} '.format(user.name)
         if user.defence:
-            users += '⬢ '
+            users += '^'
         if user == game.dealer:
-            users += '⮜'
+            users += '<<'
         users += '\n'
 
     bot.send_message(message.chat.id, users)
