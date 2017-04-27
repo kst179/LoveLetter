@@ -3,14 +3,8 @@ from cardclasses import *
 from telebot import types
 
 
-class Game:
-    def __init__(self, bot, group_chat):
-        self.bot = bot
-        self.group_chat = group_chat
-        self.users = Users()
-        self.started = False
-        self.deck = [
-            Princess(),
+def generate_deck():
+    return [Princess(),
             Countess(),
             King(),
             Prince(),
@@ -25,8 +19,16 @@ class Game:
             Guard(),
             Guard(),
             Guard(),
-            Guard()
-        ]
+            Guard()]
+
+
+class Game:
+    def __init__(self, bot, group_chat):
+        self.bot = bot
+        self.group_chat = group_chat
+        self.users = Users()
+        self.started = False
+        self.deck = generate_deck()
         self.used_cards = []
         self.dealer = None
         self.victim = None
@@ -43,7 +45,7 @@ class Game:
             return
 
         if self.double_deck:
-            self.deck *= 2
+            self.deck.extend(generate_deck())
         random.shuffle(self.deck)
         self.first_card = self.deck[-1]
         del self.deck[-1]
