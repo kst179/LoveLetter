@@ -3,14 +3,8 @@ from cardclasses import *
 from telebot import types
 
 
-class Game:
-    def __init__(self, bot, group_chat):
-        self.bot = bot
-        self.group_chat = group_chat
-        self.users = Users()
-        self.started = False
-        self.deck = [
-            Princess(),
+def generate_deck():
+    return [Princess(),
             Countess(),
             King(),
             Prince(),
@@ -25,8 +19,16 @@ class Game:
             Guard(),
             Guard(),
             Guard(),
-            Guard()
-        ]
+            Guard()]
+
+
+class Game:
+    def __init__(self, bot, group_chat):
+        self.bot = bot
+        self.group_chat = group_chat
+        self.users = Users()
+        self.started = False
+        self.deck = generate_deck()
         self.used_cards = []
         self.dealer = None
         self.victim = None
@@ -39,11 +41,11 @@ class Game:
 
     def start(self):
         if len(self.users.users) < 2:
-            self.bot.send_message(self.group_chat, 'Слишком мало игроков, должно быть минимум 2')
+            self.bot.send_message(self.group_chat, 'Слишком мало игроков, должно быть минимум 2.')
             return
 
         if self.double_deck:
-            self.deck *= 2
+            self.deck.extend(generate_deck())
         random.shuffle(self.deck)
         self.first_card = self.deck[-1]
         del self.deck[-1]
@@ -90,6 +92,10 @@ class Game:
 
         self.bot.send_message(self.group_chat, 'Ходит игрок @{}'.format(self.dealer.name))
         self.dealer.take_new_card(self.deck)
+        if len(self.deck) > 0:
+            self.bot.send_message(self.group_chat, 'В колоде осталось {} карт.'.format(len(self.deck)))
+        else:
+            self.bot.send_message(self.group_chat, 'Внимание! Последний ход.')
 
         markup = types.ReplyKeyboardMarkup(row_width=2)
         button1 = types.KeyboardButton(self.dealer.card.name)
