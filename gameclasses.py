@@ -35,6 +35,7 @@ class Game:
         self.guess = None
         self.first_card = None
         self.can_choose_yourself = False
+        self.card_without_action = False
         self.double_deck = False
         self.state = 'change_turn'
         self.bot.send_message(self.group_chat, 'Игра создана.')
@@ -119,6 +120,8 @@ class Game:
         if self.dealer.new_card.need_victim:
             self.state = 'select_victim'
 
+            self.can_choose_yourself = False
+            self.card_without_action = False
             markup = types.ReplyKeyboardMarkup()
             possible_victims = self.list_of_possible_victims()
             for user_name in possible_victims:
@@ -144,23 +147,31 @@ class Game:
             if user.name == victim_name:
                 self.victim = user
 
-        if self.dealer.new_card.need_guess:
-            self.state = 'guess_card'
+        if self.card_without_action:
+            self.state = 'change_turn'
 
-            markup = types.ReplyKeyboardMarkup()
-            for card in card_names[:-1]:
-                button = types.KeyboardButton(card)
-                markup.add(button)
-            self.bot.send_message(self.dealer.private_chat,
-                                  'Угадайте карту @{}:'.format(self.victim.name), reply_markup=markup)
-            return
-        self.state = 'change_turn'
+            active_card = self.dealer.new_card
+            self.dealer.new_card = None
+            self.used_cards.append(active_card)
+            self.check_end()
+        else:
+            if self.dealer.new_card.need_guess:
+                self.state = 'guess_card'
 
-        active_card = self.dealer.new_card
-        self.dealer.new_card = None
-        self.used_cards.append(active_card)
-        active_card.activate(self)
-        self.check_end()
+                markup = types.ReplyKeyboardMarkup()
+                for card in card_names[:-1]:
+                    button = types.KeyboardButton(card)
+                    markup.add(button)
+                self.bot.send_message(self.dealer.private_chat,
+                                      'Угадайте карту @{}:'.format(self.victim.name), reply_markup=markup)
+                return
+            self.state = 'change_turn'
+
+            active_card = self.dealer.new_card
+            self.dealer.new_card = None
+            self.used_cards.append(active_card)
+            active_card.activate(self)
+            self.check_end()
 
     def guess_card(self, guess):
         if self.state != 'guess_card':
@@ -185,6 +196,8 @@ class Game:
         if self.dealer.new_card == 'Принц' or len(list_of_victims) == 0:
             list_of_victims.append(self.dealer.name)
             self.can_choose_yourself = True
+            if self.dealer.new_card != 'Принц':
+                self.card_without_action = True
 
         return list_of_victims
 
