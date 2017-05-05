@@ -151,8 +151,6 @@ def text_message(message):
 
             game.select_card(message.text)
 
-        # if game.state is 'select_victim' and (message.text in game.users.get_victims(game.dealer) or
-        #                                       game.no_victims and message.text == game.dealer.name):
         if game.state is 'select_victim' and (message.text in game.users.get_victims(game.dealer) or
                     game.can_choose_yourself and message.text == game.dealer.name):
             game.select_victim(message.text)

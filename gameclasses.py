@@ -34,7 +34,6 @@ class Game:
         self.victim = None
         self.guess = None
         self.first_card = None
-        # self.no_victims = False
         self.can_choose_yourself = False
         self.double_deck = False
         self.state = 'change_turn'
@@ -122,21 +121,9 @@ class Game:
 
             markup = types.ReplyKeyboardMarkup()
             possible_victims = self.list_of_possible_victims()
-            for user in possible_victims:
-                button = types.KeyboardButton(user.name)
+            for user_name in possible_victims:
+                button = types.KeyboardButton(user_name)
                 markup.add(button)
-
-            # markup = types.ReplyKeyboardMarkup()
-            # self.no_victims = True
-            # for user in self.users.users:
-            #     if not user.defence and user.uid != self.dealer.uid:
-            #         button = types.KeyboardButton(user.name)
-            #         markup.add(button)
-            #         self.no_victims = False
-            #
-            # if self.no_victims:
-            #     button = types.KeyboardButton(self.dealer.name)
-            #     markup.add(button)
 
             self.bot.send_message(self.dealer.private_chat,
                                   'Выберите против кого использовать карту:', reply_markup=markup)
@@ -220,7 +207,7 @@ class Users:
         return user in self.users
 
     def kill(self, user):
-        user.bot.send_message(user.uid, 'Вы проиграли')
+        user.bot.send_message(user.uid, 'Вы проиграли!')
         if self.next_dealer > self.users.index(user):
             self.next_dealer -= 1
         self.users.remove(user)
