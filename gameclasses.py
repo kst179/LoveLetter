@@ -34,8 +34,8 @@ class Game:
         self.victim = None
         self.guess = None
         self.first_card = None
-        # self.no_victims = False
         self.can_choose_yourself = False
+        self.card_without_action = False
         self.double_deck = False
         self.state = 'change_turn'
         self.bot.send_message(self.group_chat, 'Игра создана.')
@@ -56,8 +56,11 @@ class Game:
         self.started = True
         self.state = 'change_turn'
         users = 'Игра началась.\nПорядок игроков:\n'
-        for user in self.users.users:
-            users += ' - {}\n'.format(user.name)
+        for num, user in enumerate(self.users.users):
+            if num == 0:
+                users += ' - {} <<\n'.format(user.name)
+            else:
+                users += ' - {}\n'.format(user.name)
         self.bot.send_message(self.group_chat, users)
 
     def check_end(self):
@@ -91,7 +94,7 @@ class Game:
         self.dealer = self.users.next()
         self.dealer.defence = False
 
-        self.bot.send_message(self.group_chat, 'Ходит игрок @{}'.format(self.dealer.name))
+        self.bot.send_message(self.group_chat, 'Ходит игрок @{}.'.format(self.dealer.name))
         self.dealer.take_new_card(self.deck)
         if len(self.deck) > 0:
             self.bot.send_message(self.group_chat, 'В колоде осталось {} карт.'.format(len(self.deck)))
@@ -120,27 +123,19 @@ class Game:
         if self.dealer.new_card.need_victim:
             self.state = 'select_victim'
 
+            self.can_choose_yourself = False
+            self.card_without_action = False
             markup = types.ReplyKeyboardMarkup()
             possible_victims = self.list_of_possible_victims()
-            for user in possible_victims:
-                button = types.KeyboardButton(user.name)
+            for user_name in possible_victims:
+                button = types.KeyboardButton(user_name)
                 markup.add(button)
 
-            # markup = types.ReplyKeyboardMarkup()
-            # self.no_victims = True
-            # for user in self.users.users:
-            #     if not user.defence and user.uid != self.dealer.uid:
-            #         button = types.KeyboardButton(user.name)
-            #         markup.add(button)
-            #         self.no_victims = False
-            #
-            # if self.no_victims:
-            #     button = types.KeyboardButton(self.dealer.name)
-            #     markup.add(button)
+            if not self.card_without_action:
+                self.bot.send_message(self.dealer.private_chat,
+                                      'Выберите, против кого использовать карту:', reply_markup=markup)
+                return
 
-            self.bot.send_message(self.dealer.private_chat,
-                                  'Выберите против кого использовать карту:', reply_markup=markup)
-            return
         self.state = 'change_turn'
 
         active_card = self.dealer.new_card
@@ -157,23 +152,32 @@ class Game:
             if user.name == victim_name:
                 self.victim = user
 
-        if self.dealer.new_card.need_guess:
-            self.state = 'guess_card'
+        if self.card_without_action:
+            self.state = 'change_turn'
 
-            markup = types.ReplyKeyboardMarkup()
-            for card in card_names[:-1]:
-                button = types.KeyboardButton(card)
-                markup.add(button)
-            self.bot.send_message(self.dealer.private_chat,
-                                  'Угадайте карту @{}:'.format(self.victim.name), reply_markup=markup)
-            return
-        self.state = 'change_turn'
+            active_card = self.dealer.new_card
+            self.dealer.new_card = None
+            self.used_cards.append(active_card)
+            active_card.activate(self)
+            self.check_end()
+        else:
+            if self.dealer.new_card.need_guess:
+                self.state = 'guess_card'
 
-        active_card = self.dealer.new_card
-        self.dealer.new_card = None
-        self.used_cards.append(active_card)
-        active_card.activate(self)
-        self.check_end()
+                markup = types.ReplyKeyboardMarkup()
+                for card in card_names[:-1]:
+                    button = types.KeyboardButton(card)
+                    markup.add(button)
+                self.bot.send_message(self.dealer.private_chat,
+                                      'Угадайте карту @{}:'.format(self.victim.name), reply_markup=markup)
+                return
+            self.state = 'change_turn'
+
+            active_card = self.dealer.new_card
+            self.dealer.new_card = None
+            self.used_cards.append(active_card)
+            active_card.activate(self)
+            self.check_end()
 
     def guess_card(self, guess):
         if self.state != 'guess_card':
@@ -197,7 +201,10 @@ class Game:
                     list_of_victims.append(user.name)
         if self.dealer.new_card == 'Принц' or len(list_of_victims) == 0:
             list_of_victims.append(self.dealer.name)
-            self.can_choose_yourself = True
+            if self.dealer.new_card != 'Принц':
+                self.card_without_action = True
+            else:
+                self.can_choose_yourself = True
 
         return list_of_victims
 
@@ -220,7 +227,7 @@ class Users:
         return user in self.users
 
     def kill(self, user):
-        user.bot.send_message(user.uid, 'Вы проиграли')
+        user.bot.send_message(user.uid, 'Вы проиграли!')
         if self.next_dealer > self.users.index(user):
             self.next_dealer -= 1
         self.users.remove(user)
