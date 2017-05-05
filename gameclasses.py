@@ -215,6 +215,9 @@ class Users:
                 victims.append(user.name)
         return victims
 
+    def num_users(self):
+        return len(self.users)
+
 
 class User:
     def __init__(self, name, uid, bot):

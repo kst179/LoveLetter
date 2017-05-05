@@ -87,6 +87,9 @@ def join_user(message):
         return
     game.users.add(User(username, uid, bot))
     bot.send_message(message.chat.id, '@{} присоединился к игре.'.format(username))
+    if game.users.num_users() == 6 and not game.double_deck:
+        game.double_deck = True
+        bot.send_message(message.chat.id, 'Игроков уже 6. Автоматически добавлена вторая колода.')
 
 
 @bot.message_handler(commands=['start'])
