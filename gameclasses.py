@@ -34,7 +34,8 @@ class Game:
         self.victim = None
         self.guess = None
         self.first_card = None
-        self.no_victims = False
+        # self.no_victims = False
+        self.can_choose_yourself = False
         self.double_deck = False
         self.state = 'change_turn'
         self.bot.send_message(self.group_chat, 'Игра создана.')
@@ -102,8 +103,8 @@ class Game:
         button2 = types.KeyboardButton(self.dealer.new_card.name)
         markup.add(button1, button2)
 
-        self.bot.send_message(self.dealer.private_chat, 'Выберите карту которой хотите сыграть:', reply_markup=markup)
         self.state = 'select_card'
+        self.bot.send_message(self.dealer.private_chat, 'Выберите карту которой хотите сыграть:', reply_markup=markup)
 
     def select_card(self, card_type):
         if self.state != 'select_card':
@@ -120,16 +121,22 @@ class Game:
             self.state = 'select_victim'
 
             markup = types.ReplyKeyboardMarkup()
-            self.no_victims = True
-            for user in self.users.users:
-                if not user.defence and user.uid != self.dealer.uid:
-                    button = types.KeyboardButton(user.name)
-                    markup.add(button)
-                    self.no_victims = False
-
-            if self.no_victims:
-                button = types.KeyboardButton(self.dealer.name)
+            possible_victims = self.list_of_possible_victims()
+            for user in possible_victims:
+                button = types.KeyboardButton(user.name)
                 markup.add(button)
+
+            # markup = types.ReplyKeyboardMarkup()
+            # self.no_victims = True
+            # for user in self.users.users:
+            #     if not user.defence and user.uid != self.dealer.uid:
+            #         button = types.KeyboardButton(user.name)
+            #         markup.add(button)
+            #         self.no_victims = False
+            #
+            # if self.no_victims:
+            #     button = types.KeyboardButton(self.dealer.name)
+            #     markup.add(button)
 
             self.bot.send_message(self.dealer.private_chat,
                                   'Выберите против кого использовать карту:', reply_markup=markup)
@@ -183,6 +190,16 @@ class Game:
     def end(self):
         self.started = False
 
+    def list_of_possible_victims(self):
+        list_of_victims = []
+        for user in self.users.users:
+            if not user.defence and user.uid != self.dealer.uid:
+                    list_of_victims.append(user.name)
+        if self.dealer.new_card == 'Принц' or len(list_of_victims) == 0:
+            list_of_victims.append(self.dealer.name)
+            self.can_choose_yourself = True
+
+        return list_of_victims
 
 class Users:
     def __init__(self):
