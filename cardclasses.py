@@ -59,10 +59,10 @@ class King(Card):
 
         if game.card_without_action:
             game.bot.send_message(game.group_chat,
-                                  '@{} использует Короля впустую.'.format(
+                                  '@{} использует Короля впустую, так как все защищены.'.format(
                                       self.owner.name))
             game.bot.send_message(self.owner.uid,
-                                  '@{} использует Короля впустую.'.format(
+                                  '@{} использует Короля впустую, так как все защищены.'.format(
                                       self.owner.name),
                                   reply_markup=markup)
         else:
@@ -140,10 +140,10 @@ class Baron(Card):
 
         if game.card_without_action:
             game.bot.send_message(game.group_chat,
-                                  '@{} использует Барона впустую.'.format(
+                                  '@{} использует Барона впустую, так как все защищены.'.format(
                                       self.owner.name))
             game.bot.send_message(self.owner.uid,
-                                  '@{} использует Барона впустую.'.format(
+                                  '@{} использует Барона впустую, так как все защищены.'.format(
                                       self.owner.name),
                                   reply_markup=markup)
         else:
@@ -191,10 +191,10 @@ class Priest(Card):
 
         if game.card_without_action:
             game.bot.send_message(game.group_chat,
-                                  '@{} использует Священника впустую.'.format(
+                                  '@{} использует Священника впустую, так как все защищены.'.format(
                                       self.owner.name))
             game.bot.send_message(self.owner.uid,
-                                  '@{} использует Священника впустую.'.format(
+                                  '@{} использует Священника впустую, так как все защищены.'.format(
                                       self.owner.name),
                                   reply_markup=markup)
         else:
@@ -221,10 +221,10 @@ class Guard(Card):
 
         if game.card_without_action:
             game.bot.send_message(game.group_chat,
-                                  '@{} использует Стражницу впустую.'.format(
+                                  '@{} использует Стражницу впустую, так как все защищены.'.format(
                                       self.owner.name))
             game.bot.send_message(self.owner.uid,
-                                  '@{} использует Стражницу впустую.'.format(
+                                  '@{} использует Стражницу впустую, так как все защищены.'.format(
                                       self.owner.name),
                                   reply_markup=markup)
         else:

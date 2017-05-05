@@ -56,8 +56,11 @@ class Game:
         self.started = True
         self.state = 'change_turn'
         users = 'Игра началась.\nПорядок игроков:\n'
-        for user in self.users.users:
-            users += ' - {}\n'.format(user.name)
+        for num, user in enumerate(self.users.users):
+            if num == 0:
+                users += ' - {} <<\n'.format(user.name)
+            else:
+                users += ' - {}\n'.format(user.name)
         self.bot.send_message(self.group_chat, users)
 
     def check_end(self):
@@ -91,7 +94,7 @@ class Game:
         self.dealer = self.users.next()
         self.dealer.defence = False
 
-        self.bot.send_message(self.group_chat, 'Ходит игрок @{}'.format(self.dealer.name))
+        self.bot.send_message(self.group_chat, 'Ходит игрок @{}.'.format(self.dealer.name))
         self.dealer.take_new_card(self.deck)
         if len(self.deck) > 0:
             self.bot.send_message(self.group_chat, 'В колоде осталось {} карт.'.format(len(self.deck)))
@@ -128,9 +131,11 @@ class Game:
                 button = types.KeyboardButton(user_name)
                 markup.add(button)
 
-            self.bot.send_message(self.dealer.private_chat,
-                                  'Выберите против кого использовать карту:', reply_markup=markup)
-            return
+            if not self.card_without_action:
+                self.bot.send_message(self.dealer.private_chat,
+                                      'Выберите, против кого использовать карту:', reply_markup=markup)
+                return
+
         self.state = 'change_turn'
 
         active_card = self.dealer.new_card
@@ -153,6 +158,7 @@ class Game:
             active_card = self.dealer.new_card
             self.dealer.new_card = None
             self.used_cards.append(active_card)
+            active_card.activate(self)
             self.check_end()
         else:
             if self.dealer.new_card.need_guess:
@@ -195,9 +201,10 @@ class Game:
                     list_of_victims.append(user.name)
         if self.dealer.new_card == 'Принц' or len(list_of_victims) == 0:
             list_of_victims.append(self.dealer.name)
-            self.can_choose_yourself = True
             if self.dealer.new_card != 'Принц':
                 self.card_without_action = True
+            else:
+                self.can_choose_yourself = True
 
         return list_of_victims
 
