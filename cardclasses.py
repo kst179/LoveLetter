@@ -95,10 +95,10 @@ class Prince(Card):
         if game.victim.card.name == 'Принцесса':
             game.bot.send_message(game.group_chat,
                                   '@{0} использует Принца против @{1}. '
-                                  '@{1} Сбрасывает Принцессу и проигрывает.'.format(self.owner.name, game.victim.name))
+                                  '@{1} сбрасывает Принцессу и проигрывает.'.format(self.owner.name, game.victim.name))
             game.bot.send_message(self.owner.uid,
                                   '@{0} использует Принца против @{1}. '
-                                  '@{1} Сбрасывает Принцессу и проигрывает.'.format(self.owner.name, game.victim.name),
+                                  '@{1} сбрасывает Принцессу и проигрывает.'.format(self.owner.name, game.victim.name),
                                   reply_markup=markup)
             game.users.kill(game.victim)
             return
@@ -173,10 +173,10 @@ class Baron(Card):
                 game.users.kill(self.owner)
             else:
                 game.bot.send_message(game.group_chat,
-                                      'похоже у @{} и @{} одинаковые карты... '
+                                      'Похоже, у @{} и @{} одинаковые карты... '
                                       'Барон уходит впустую.'.format(self.owner.name, game.victim.name))
                 game.bot.send_message(self.owner.uid,
-                                      'похоже у @{} и @{} одинаковые карты... '
+                                      'Похоже, у @{} и @{} одинаковые карты... '
                                       'Барон уходит впустую.'.format(self.owner.name, game.victim.name),
                                       reply_markup=markup)
 
