@@ -1,34 +1,15 @@
 import random
-from cardclasses import *
+from cards import *
 from telebot import types
 
 
-def generate_deck():
-    return [Princess(),
-            Countess(),
-            King(),
-            Prince(),
-            Prince(),
-            Maid(),
-            Maid(),
-            Baron(),
-            Baron(),
-            Priest(),
-            Priest(),
-            Guard(),
-            Guard(),
-            Guard(),
-            Guard(),
-            Guard()]
-
-
 class Game:
-    def __init__(self, bot, group_chat):
+    def __init__(self, bot, chat_id):
         self.bot = bot
-        self.group_chat = group_chat
+        self.chat_id = chat_id
         self.users = Users()
         self.started = False
-        self.deck = generate_deck()
+        self.deck = self.generate_deck()
         self.used_cards = []
         self.dealer = None
         self.victim = None
@@ -38,11 +19,11 @@ class Game:
         self.card_without_action = False
         self.double_deck = False
         self.state = 'change_turn'
-        self.bot.send_message(self.group_chat, 'Игра создана.')
+        self.bot.send_message(self.chat_id, 'Игра создана.')
 
     def start(self):
         if len(self.users.users) < 2:
-            self.bot.send_message(self.group_chat, 'Слишком мало игроков, должно быть минимум 2.')
+            self.bot.send_message(self.chat_id, 'Слишком мало игроков, должно быть минимум 2.')
             return
 
         if self.double_deck:
@@ -61,7 +42,7 @@ class Game:
                 users += ' - {} <<\n'.format(user.name)
             else:
                 users += ' - {}\n'.format(user.name)
-        self.bot.send_message(self.group_chat, users)
+        self.bot.send_message(self.chat_id, users)
 
     def check_end(self):
         if len(self.users.users) == 1 or len(self.deck) == 0:
@@ -77,7 +58,7 @@ class Game:
                 results += '{}. {} - {} ({})\n'.format(i+1, card.owner.name, card.name, card.value)
 
 
-            self.bot.send_message(self.group_chat, results)
+            self.bot.send_message(self.chat_id, results)
 
             self.bot.send_message(winner.uid, 'Вы выиграли!')
             for user in self.users.users:
@@ -94,12 +75,12 @@ class Game:
         self.dealer = self.users.next()
         self.dealer.defence = False
 
-        self.bot.send_message(self.group_chat, 'Ходит игрок @{}.'.format(self.dealer.name))
+        self.bot.send_message(self.chat_id, 'Ходит игрок @{}.'.format(self.dealer.name))
         self.dealer.take_new_card(self.deck)
         if len(self.deck) > 0:
-            self.bot.send_message(self.group_chat, 'В колоде осталось {} карт.'.format(len(self.deck)))
+            self.bot.send_message(self.chat_id, 'В колоде осталось {} карт.'.format(len(self.deck)))
         else:
-            self.bot.send_message(self.group_chat, 'Внимание! Последний ход.')
+            self.bot.send_message(self.chat_id, 'Внимание! Последний ход.')
 
         markup = types.ReplyKeyboardMarkup(row_width=2)
         button1 = types.KeyboardButton(self.dealer.card.name)
@@ -208,70 +189,19 @@ class Game:
 
         return list_of_victims
 
-class Users:
-    def __init__(self):
-        self.users = []
-        self.next_dealer = 0
-
-    def add(self, user):
-        self.users.append(user)
-
-    def shuffle(self):
-        random.shuffle(self.users)
-
-    def next(self):
-        self.next_dealer = (self.next_dealer + 1) % len(self.users)
-        return self.users[self.next_dealer - 1]
-
-    def __contains__(self, user):
-        return user in self.users
-
-    def kill(self, user):
-        user.bot.send_message(user.uid, 'Вы проиграли!')
-        if self.next_dealer > self.users.index(user):
-            self.next_dealer -= 1
-        self.users.remove(user)
-
-    def get_victims(self, dealer):
-        victims = []
-        for user in self.users:
-            if not user.defence and user.uid != dealer.uid:
-                victims.append(user.name)
-        return victims
-
-    def num_users(self):
-        return len(self.users)
-
-
-class User:
-    def __init__(self, name, uid, bot):
-        self.name = name
-        self.uid = uid
-        self.private_chat = uid
-        print(self.private_chat)
-        print(self.uid)
-        self.bot = bot
-        self.card = None
-        self.new_card = None
-        self.defence = False
-
-    def take_card(self, deck):
-        self.card = deck[-1]
-        self.card.owner = self
-        del deck[-1]
-        self.bot.send_message(self.private_chat, 'Ваша карта "{}"'.format(self.card.name))
-
-    def take_new_card(self, deck):
-        self.new_card = deck[-1]
-        self.new_card.owner = self
-        del deck[-1]
-        self.bot.send_message(self.private_chat, 'Вы взяли из колоды карту "{}"'.format(self.new_card.name))
-
-    def __eq__(self, other):
-        if type(other) is User:
-            return self.uid == other.uid
-        return self.uid == other
-        
-    def __ne__(self, other):
-        return not self == other 
-
+    @staticmethod
+    def generate_deck():
+        return [
+            Princess(),
+            Countess(),
+            King(),
+            Prince(),
+            Prince(),
+            Maid(),
+            Maid(),
+            Baron(),
+            Baron(),
+            Priest(),
+            Priest(),
+            *(Guard() for i in range(5))
+        ]
