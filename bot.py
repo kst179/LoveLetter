@@ -1,10 +1,17 @@
-import config
-from game import Game, Users, User
-from cards import card_names
+"""
+module docstring
+"""
+from gettext import gettext as _
+
 import telebot
 from telebot import types
+
 import numpy as np
-from gettext import gettext as _
+
+from game import Game
+from users import User
+from cards import card_names
+import config
 
 
 class GameBot(telebot.TeleBot):
@@ -36,6 +43,10 @@ class GameBot(telebot.TeleBot):
         once created, bot will continuously accept special commands from players
         and handle it.
         """
+        # This functions would be called only by base class methods,
+        # so linter thinks they are unused
+        # pylint: disable=unused-variable
+
         @self.message_handler(commands=['help'])
         def show_help(message):
             self.show_help(message)
@@ -85,7 +96,7 @@ class GameBot(telebot.TeleBot):
         """
         if chat_id not in self.games.keys():
             self.send_message(chat_id, _("There no game in this chat yet"))
-            return
+            return None
 
         return self.games[chat_id]
 
@@ -148,7 +159,8 @@ class GameBot(telebot.TeleBot):
         if chat_id in self.games.keys():
             markup = types.ReplyKeyboardRemove(selective=False)
 
-            self.send_message(chat_id, _("The game has been already created in this chat, restart it?"))
+            self.send_message(chat_id,
+                              _("The game has been already created in this chat, restart it?"))
             return
 
         self.games[chat_id] = Game(self, chat_id)
@@ -210,8 +222,10 @@ class GameBot(telebot.TeleBot):
 
         if game.users.num_users() == 6 and not game.double_deck:
             game.double_deck = True
-            self.send_message(chat_id,
-                             _("The number of players reached 6, the second deck is automatically added"))
+            self.send_message(
+                chat_id,
+                _("The number of players reached 6, the second deck is automatically added")
+            )
 
     def start_game(self, message):
         """
@@ -299,15 +313,16 @@ class GameBot(telebot.TeleBot):
             return
 
         if chat_id == game.dealer.uid:
-            if game.state is 'select_card' and \
+            if game.state == 'select_card' and \
                     message.text in [game.dealer.card.name, game.dealer.new_card.name]:
                 game.select_card(message.text)
 
-            if game.state is 'select_victim' and (message.text in game.users.get_victims(game.dealer) or
-                                                  game.can_choose_yourself and message.text == game.dealer.name):
+            if (game.state == 'select_victim' and
+                    (message.text in game.users.get_victims(game.dealer) or
+                     game.can_choose_yourself and message.text == game.dealer.name)):
                 game.select_victim(message.text)
 
-            if game.state is 'guess_card' and message.text in card_names[:-1]:
+            if game.state == 'guess_card' and message.text in card_names[:-1]:
                 game.guess_card(message.text)
 
 
