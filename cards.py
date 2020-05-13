@@ -1,14 +1,28 @@
-card_names = ['Принцесса', 'Графиня', 'Король', 'Принц', 'Служанка', 'Барон', 'Священник', 'Стражница']
 from telebot import types
 
+card_names = ['Принцесса', 'Графиня', 'Король', 'Принц', 'Служанка', 'Барон', 'Священник', 'Стражница']
+
+
 class Card:
+    """
+    Base class for game card
+
+
+    """
     value = None
     need_victim = False
     need_guess = False
     owner = None
 
     def activate(self, game):
-        pass
+        """
+        Use this card in the game
+        :param game:
+
+        :return:
+        """
+
+        raise NotImplementedError
 
     def __eq__(self, other):
         return self.name == other
