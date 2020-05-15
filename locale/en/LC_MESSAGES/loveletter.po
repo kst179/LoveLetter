@@ -1,0 +1,254 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2020-05-15 22:22+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=CHARSET\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: bot.py:108
+msgid "You didn't joined to any game yet"
+msgstr ""
+
+#: bot.py:114
+msgid "There no game in this chat yet"
+msgstr ""
+
+#: bot.py:129
+msgid "help"
+msgstr ""
+
+#: bot.py:139
+msgid "hints"
+msgstr ""
+
+#: bot.py:153
+msgid "The game has been already created in this chat"
+msgstr ""
+
+#: bot.py:176
+msgid "The game is already started"
+msgstr ""
+
+#: bot.py:181
+msgid "The second deck is added"
+msgstr ""
+
+#: bot.py:184
+msgid "The second deck is removed"
+msgstr ""
+
+#: bot.py:202
+msgid "Game has been already started"
+msgstr ""
+
+#: bot.py:209
+msgid "Player @{} already joined to game."
+msgstr ""
+
+#: bot.py:222
+msgid "The number of players reached 6, the second deck is automatically added"
+msgstr ""
+
+#: bot.py:260
+msgid "Dropped cards list:\n"
+msgstr ""
+
+#: bot.py:281
+msgid "Players remained: \n"
+msgstr ""
+
+#: cards.py:71
+msgid "Princess"
+msgstr ""
+
+#: cards.py:78
+msgid "@{} drops a Princess and loses."
+msgstr ""
+
+#: cards.py:96
+msgid "Countess"
+msgstr ""
+
+#: cards.py:103
+msgid "@{} drops a Countess."
+msgstr ""
+
+#: cards.py:119 game.py:218
+msgid "King"
+msgstr ""
+
+#: cards.py:129
+msgid "@{} drops the King because all players are protected."
+msgstr ""
+
+#: cards.py:137
+#, python-brace-format
+msgid "@{0} plays the King to exchange cards with @{1}."
+msgstr ""
+
+#: cards.py:143 cards.py:147
+#, python-brace-format
+msgid "You've got a {0} from player @{1}"
+msgstr ""
+
+#: cards.py:167 game.py:218
+msgid "Prince"
+msgstr ""
+
+#: cards.py:177
+#, python-brace-format
+msgid "@{0} uses Prince against @{1}. @{1} drops a Princess and loses!"
+msgstr ""
+
+#: cards.py:188
+#, python-brace-format
+msgid "@{0} uses a Prince against @{1}. @{1} has the {2}."
+msgstr ""
+
+#: cards.py:211
+msgid "Maid"
+msgstr ""
+
+#: cards.py:218
+msgid "@{} is under Maid protection for a one full round."
+msgstr ""
+
+#: cards.py:237
+msgid "Baron"
+msgstr ""
+
+#: cards.py:247
+msgid "@{} drops a Baron, because all players are protected."
+msgstr ""
+
+#: cards.py:255
+#, python-brace-format
+msgid "@{0} uses the Baron against @{1} and wins. @{1} has the {2} card"
+msgstr ""
+
+#: cards.py:268
+#, python-brace-format
+msgid "@{0} uses the Baron against @{1}, but looses. @{0} has the {2} card"
+msgstr ""
+
+#: cards.py:281
+#, python-brace-format
+msgid ""
+"Aaaand... here goes nothingLooks like @{0} and @{1} have the same cards... "
+msgstr ""
+
+#: cards.py:298
+msgid "Priest"
+msgstr ""
+
+#: cards.py:308
+msgid "@{} drops Priest, because all players are protected."
+msgstr ""
+
+#: cards.py:315
+msgid "@{} uses a Priest card and looks at @{}'s card."
+msgstr ""
+
+#: cards.py:321
+msgid "@{} shows you his card. He(She) has the {}."
+msgstr ""
+
+#: cards.py:337
+msgid "Guard"
+msgstr ""
+
+#: cards.py:347
+msgid "@{} drops the Guard, because all players are protected."
+msgstr ""
+
+#: cards.py:356
+msgid "@{} uses the Guard and guess that @{} has the {}."
+msgstr ""
+
+#: cards.py:369
+#, python-brace-format
+msgid ""
+"@{0} uses Guard, assuming that @{1} holds the {2} card, but do not guess it "
+"right."
+msgstr ""
+
+#: game.py:80
+msgid "Game is created"
+msgstr ""
+
+#: game.py:97
+msgid "Not enough players, to play, you need at least 2 of them"
+msgstr ""
+
+#: game.py:111
+msgid ""
+"The game is started!\n"
+"Players order (top moves first):\n"
+msgstr ""
+
+#: game.py:143
+msgid ""
+"Game is over\n"
+"Winner is {}\n"
+"Players remains\n"
+msgstr ""
+
+#: game.py:153
+msgid "Greetings! You've won!"
+msgstr ""
+
+#: game.py:156
+msgid "You loose!"
+msgstr ""
+
+#: game.py:183
+msgid "@{}'s turn"
+msgstr ""
+
+#: game.py:187
+msgid "It's {} cards left."
+msgstr ""
+
+#: game.py:189
+msgid "Attention! It's the last turn"
+msgstr ""
+
+#: game.py:196
+msgid "Choose a card which you want to play:"
+msgstr ""
+
+#: game.py:221
+msgid "Woopsy-daisy... You need to drop a countess."
+msgstr ""
+
+#: game.py:242
+msgid "Choose the player you want play this card with:"
+msgstr ""
+
+#: game.py:289
+msgid "Guess the @{}'s card:"
+msgstr ""
+
+#: users.py:71
+msgid "Your card is '{}'"
+msgstr ""
+
+#: users.py:87
+msgid "You have taken the '{}' card"
+msgstr ""
+
+#: users.py:149
+msgid "You've lost!"
+msgstr ""
