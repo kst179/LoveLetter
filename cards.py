@@ -2,7 +2,6 @@
 Module that contains classes representing love letter's cards
 """
 
-from gettext import gettext as _
 from telebot import types
 
 

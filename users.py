@@ -3,8 +3,6 @@ Module contains classes that represents a players
 User and Users (see their docstrings for more)
 """
 
-from gettext import gettext as _
-
 import random
 from collections import deque
 

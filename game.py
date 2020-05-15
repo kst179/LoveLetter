@@ -6,7 +6,6 @@ the game table and handles all events within one game
 import random
 
 from itertools import chain
-from gettext import gettext as _
 
 from telebot import types
 
