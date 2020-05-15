@@ -5,7 +5,9 @@ User and Users (see their docstrings for more)
 
 import random
 from collections import deque
+import gettext
 
+gettext.install('loveletter', localedir='./locale', codeset='UTF-8')
 
 class User:
     """

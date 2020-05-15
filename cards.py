@@ -3,6 +3,9 @@ Module that contains classes representing love letter's cards
 """
 
 from telebot import types
+import gettext
+
+gettext.install('loveletter', localedir='./locale', codeset='UTF-8')
 
 
 class Card:

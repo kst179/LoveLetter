@@ -14,6 +14,8 @@ import numpy as np
 from game import Game
 from users import User
 
+gettext.install('loveletter', localedir='./locale', codeset='UTF-8')
+
 
 class GameBot(telebot.TeleBot):
     """
@@ -352,6 +354,4 @@ def main():
 
 
 if __name__ == '__main__':
-    gettext.install('loveletter', localedir='./locale', codeset='UTF-8')
-
     main()

@@ -4,8 +4,8 @@ the game table and handles all events within one game
 """
 
 import random
-
 from itertools import chain
+import gettext
 
 from telebot import types
 
@@ -20,6 +20,8 @@ from cards import (
     Priest,
     Guard
 )
+
+gettext.install('loveletter', localedir='./locale', codeset='UTF-8')
 
 
 class Game:
