@@ -1,3 +1,8 @@
+"""
+Here contains the Game class that represents
+the game table and handles all events within one game
+"""
+
 import random
 
 from itertools import chain
@@ -72,7 +77,7 @@ class Game:
 
         self.deck = self.generate_deck()
 
-        self.bot.send_message(self.chat_id, _("Game is created."))
+        self.bot.send_message(self.chat_id, _("Game is created"))
 
     def start(self):
         """
@@ -154,8 +159,7 @@ class Game:
 
             return
 
-        state = 'change_turn'
-        self.start_turn()
+        self.state = 'change_turn'
 
     def start_turn(self):
         """
@@ -314,6 +318,15 @@ class Game:
         self.is_game_over()
 
     def list_possible_victims(self):
+        """
+        Returns a list of possible victims within one game
+        Player can be a victim only if he is not defended by Maid
+        and he is not a dealer. Howewer if everybody are defended,
+        dealer can become the only one victim, or he can use Prince on himself
+
+        :return:
+            list, list of victims
+        """
         list_of_victims = []
         for user in self.users:
             if not user.defence and user.user_id != self.dealer.user_id:

@@ -14,189 +14,207 @@ msgstr ""
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: \n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=CHARSET\n"
+"Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
 #: bot.py:108
 msgid "You didn't joined to any game yet"
-msgstr ""
+msgstr "Вы еще не присоединилсись к игре"
 
 #: bot.py:114
 msgid "There no game in this chat yet"
-msgstr ""
+msgstr "В этом чате еще не создана игра"
 
 #: bot.py:129
 msgid "help"
-msgstr ""
+msgstr "/help - показывает это сообщение\n\n\
+/rules - правила игры (TODO)\n\
+/hint - карточка с кратким описанием и стоимостью карт\n\n\
+/create - создает полностью новую игру с пустым списком игроков\n\
+/join - добавляет игрока в игру\n\
+/start - после добавления всех игроков начинает игру\n\
+/newround - перезапускает игру с теми же игроками и настройками (TODO)\n\n\
+/cards - показывает все сброшенные с рук карты\n\
+/players - показывает всех оставшихся в игре игроков\n\n\
+/doubledeck - играть в 2 колоды: больше карт, больше народу, больше веселья!"
 
 #: bot.py:139
 msgid "hints"
-msgstr ""
+msgstr "8. Принцесса (x1) - если вы сбрасываете эту карту, оказываетесь вне игры\n\
+7. Графиня (x1) - если на руке Принц или Король, то Графиню надо сбросить\n\
+6. Король (x1) - скинув Короля обменяйтесь картами с одним из игроков\n\
+5. Принц (x2) - выбранный вами игрок должен скинуть свою карту и взять новую\n\
+4. Служанка (x2) - сбросив Служанку получаете защиту на следующий круг\n\
+3. Барон (x2) - сравните свою карту с другим игроком, у кого значение меньше - тот вылетает из игры\n\
+2. Священник (x2) - позволяет посмотреть карту другого игрока\n\
+1. Стражница (x5) - назовите карту другого игрока (не стражницу), если угадаете - он вылетет из игры"
 
 #: bot.py:153
 msgid "The game has been already created in this chat"
-msgstr ""
+msgstr "В этом чате игра уже создана"
 
 #: bot.py:176
 msgid "The game is already started"
-msgstr ""
+msgstr "Игра еще не началась"
 
 #: bot.py:181
 msgid "The second deck is added"
-msgstr ""
+msgstr "Добавлена вторая колода"
 
 #: bot.py:184
 msgid "The second deck is removed"
-msgstr ""
+msgstr "Вторая колода убрана"
 
 #: bot.py:202
 msgid "Game has been already started"
-msgstr ""
+msgstr "Игра еще не началась"
 
 #: bot.py:209
 msgid "Player @{} already joined to game."
-msgstr ""
+msgstr "Игрок @{} уже присоединился к игре"
 
 #: bot.py:222
 msgid "The number of players reached 6, the second deck is automatically added"
-msgstr ""
+msgstr "Число игроков достигло шести, добавлена вторая колода"
 
 #: bot.py:260
 msgid "Dropped cards list:\n"
-msgstr ""
+msgstr "Список карт в сбросе:\n"
 
 #: bot.py:281
 msgid "Players remained: \n"
-msgstr ""
+msgstr "Оставшиеся игроки: \n"
 
 #: cards.py:71
 msgid "Princess"
-msgstr ""
+msgstr "Принцесса"
 
 #: cards.py:78
 msgid "@{} drops a Princess and loses."
-msgstr ""
+msgstr "@{} скидывает Принцессу и проигрывает"
 
 #: cards.py:96
 msgid "Countess"
-msgstr ""
+msgstr "Графиня"
 
 #: cards.py:103
 msgid "@{} drops a Countess."
-msgstr ""
+msgstr "@{} скидывает графиню"
 
 #: cards.py:119 game.py:218
 msgid "King"
-msgstr ""
+msgstr "Король"
 
 #: cards.py:129
 msgid "@{} drops the King because all players are protected."
-msgstr ""
+msgstr "@{} скидывает Короля потому что все игроки защищенны"
 
 #: cards.py:137
 #, python-brace-format
 msgid "@{0} plays the King to exchange cards with @{1}."
-msgstr ""
+msgstr "@{0} использует Короля чтобы обменяться картами с @{1}"
 
 #: cards.py:143 cards.py:147
 #, python-brace-format
 msgid "You've got a {0} from player @{1}"
-msgstr ""
+msgstr "Вы получили карту {0} от @{1}"
 
 #: cards.py:167 game.py:218
 msgid "Prince"
-msgstr ""
+msgstr "Принц"
 
 #: cards.py:177
 #, python-brace-format
 msgid "@{0} uses Prince against @{1}. @{1} drops a Princess and loses!"
-msgstr ""
+msgstr "@{0} использет карту Принца на @{1}. @{1} скидывает Принцессу и проигрывает!"
 
 #: cards.py:188
 #, python-brace-format
 msgid "@{0} uses a Prince against @{1}. @{1} has the {2}."
-msgstr ""
+msgstr "@{0} использует карту Принца на игрока @{1}. У @{1} была карта {2}"
 
 #: cards.py:211
 msgid "Maid"
-msgstr ""
+msgstr "Служанка"
 
 #: cards.py:218
 msgid "@{} is under Maid protection for a one full round."
-msgstr ""
+msgstr "@{} защищен Служанкой в течение круга"
 
 #: cards.py:237
 msgid "Baron"
-msgstr ""
+msgstr "Барон"
 
 #: cards.py:247
 msgid "@{} drops a Baron, because all players are protected."
-msgstr ""
+msgstr "@{} скидывает Барона впустую, потому что все остальные игроки защищены Служанками"
 
 #: cards.py:255
 #, python-brace-format
 msgid "@{0} uses the Baron against @{1} and wins. @{1} has the {2} card"
-msgstr ""
+msgstr "@{0} использует Барона против @{1} и выигрывает, у @{1} была карта {2}"
 
 #: cards.py:268
 #, python-brace-format
 msgid "@{0} uses the Baron against @{1}, but looses. @{0} has the {2} card"
-msgstr ""
+msgstr "@{0} использует Барона против @{1}, но проигрывает у @{0} была карта {2}"
 
 #: cards.py:281
 #, python-brace-format
 msgid ""
 "Aaaand... here goes nothingLooks like @{0} and @{1} have the same cards... "
-msgstr ""
+msgstr "Иииии... ничего не происходит. Похоже у @{0} и @{1} картый одинаковые..."
 
 #: cards.py:298
 msgid "Priest"
-msgstr ""
+msgstr "Священник"
 
 #: cards.py:308
 msgid "@{} drops Priest, because all players are protected."
-msgstr ""
+msgstr "@{} сбрасывает Священика впустую, так как все игроки защищены."
 
 #: cards.py:315
 msgid "@{} uses a Priest card and looks at @{}'s card."
-msgstr ""
+msgstr "@{} использует карту Священника, чтобы подмотреть карту игрока @{}"
 
 #: cards.py:321
 msgid "@{} shows you his card. He(She) has the {}."
-msgstr ""
+msgstr "@{} показывает вам свою карту. У него(неё) {}"
 
 #: cards.py:337
 msgid "Guard"
-msgstr ""
+msgstr "Стражница"
 
 #: cards.py:347
 msgid "@{} drops the Guard, because all players are protected."
-msgstr ""
+msgstr "@{} скидывает Стражницу, потому что все игроки защищены"
 
 #: cards.py:356
 msgid "@{} uses the Guard and guess that @{} has the {}."
-msgstr ""
+msgstr "@{} использует Стражницу и угадывает, что у @{} {}"
 
 #: cards.py:369
 #, python-brace-format
 msgid ""
 "@{0} uses Guard, assuming that @{1} holds the {2} card, but do not guess it "
 "right."
-msgstr ""
+msgstr "@{0} использует Стражницу, предполагая, что у @{1} {2}, но не угадывает"
 
 #: game.py:80
 msgid "Game is created"
-msgstr ""
+msgstr "Игра создана"
 
 #: game.py:97
 msgid "Not enough players, to play, you need at least 2 of them"
-msgstr ""
+msgstr "Не достаточно игроков, требуется минимум 2 чтобы начать игру"
 
 #: game.py:111
 msgid ""
 "The game is started!\n"
 "Players order (top moves first):\n"
 msgstr ""
+"Игра началась!\n"
+"Порядок игроков (верхний ходит первым)\n"
 
 #: game.py:143
 msgid ""
@@ -204,51 +222,54 @@ msgid ""
 "Winner is {}\n"
 "Players remains\n"
 msgstr ""
+"Игра окончена\n"
+"Победитель {}\n"
+"Оставшиеся игроки\n"
 
 #: game.py:153
 msgid "Greetings! You've won!"
-msgstr ""
+msgstr "Поздравляем! Вы выиграли!"
 
 #: game.py:156
 msgid "You loose!"
-msgstr ""
+msgstr "Вы проиграли"
 
 #: game.py:183
 msgid "@{}'s turn"
-msgstr ""
+msgstr "Ход игрока @{}"
 
 #: game.py:187
 msgid "It's {} cards left."
-msgstr ""
+msgstr "Осталось {} карт"
 
 #: game.py:189
 msgid "Attention! It's the last turn"
-msgstr ""
+msgstr "Внимание! Последний ход"
 
 #: game.py:196
 msgid "Choose a card which you want to play:"
-msgstr ""
+msgstr "Выберите карту которой хотите сыграть"
 
 #: game.py:221
 msgid "Woopsy-daisy... You need to drop a countess."
-msgstr ""
+msgstr "Ай-ай-ай... Кажется надо таки сбросить Графиню"
 
 #: game.py:242
 msgid "Choose the player you want play this card with:"
-msgstr ""
+msgstr "Выберите игрока, на которого хотите применить действие карты:"
 
 #: game.py:289
 msgid "Guess the @{}'s card:"
-msgstr ""
+msgstr "Угадайте карту @{}"
 
 #: users.py:71
 msgid "Your card is '{}'"
-msgstr ""
+msgstr "Ваша карта '{}'"
 
 #: users.py:87
 msgid "You have taken the '{}' card"
-msgstr ""
+msgstr "Вы взяли карту '{}'"
 
 #: users.py:149
 msgid "You've lost!"
-msgstr ""
+msgstr "Вы проиграли"

@@ -6,18 +6,6 @@ from gettext import gettext as _
 from telebot import types
 
 
-card_names = [
-    _("Princess"),
-    _("Countess"),
-    _("King"),
-    _("Prince"),
-    _("Maid"),
-    _("Baron"),
-    _("Priest"),
-    _("Guard")
-]
-
-
 class Card:
     """
     An abstract class that represents the arbitrary card

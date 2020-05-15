@@ -14,7 +14,7 @@ msgstr ""
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: \n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=CHARSET\n"
+"Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
 #: bot.py:108
@@ -27,11 +27,26 @@ msgstr ""
 
 #: bot.py:129
 msgid "help"
-msgstr ""
+msgstr "/help - shows this message\n\
+/rules - rules of this game\n\
+/hint - gives a small hint about cards\n\
+/create - creates a new game in this chat\n\
+/join - add user who sent this message to game\n\
+/start - starts a game after all configurations\n\
+/cards - shows all cards that are already played\n\
+/players - shows list of players\n\
+/doubledeck - adds second deck to the game, more players - more cards - more fun!"
 
 #: bot.py:139
 msgid "hints"
-msgstr ""
+msgstr "8. Принцесса (x1) - если вы сбрасываете эту карту, оказываетесь вне игры\n\
+7. Графиня (x1) - если на руке Принц или Король, то Графиню надо сбросить\n\
+6. Король (x1) - скинув Короля обменяйтесь картами с одним из игроков\n\
+5. Принц (x2) - выбранный вами игрок должен скинуть свою карту и взять новую\n\
+4. Служанка (x2) - сбросив Служанку получаете защиту на следующий круг\n\
+3. Барон (x2) - сравните свою карту с другим игроком, у кого значение меньше - тот вылетает из игры\n\
+2. Священник (x2) - позволяет посмотреть карту другого игрока\n\
+1. Стражница (x5) - назовите карту другого игрока (не стражницу), если угадаете - он вылетет из игры"
 
 #: bot.py:153
 msgid "The game has been already created in this chat"
