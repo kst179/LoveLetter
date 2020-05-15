@@ -1,3 +1,6 @@
+# pylint: disable=undefined-variable
+# pylint: disable=import-error
+
 """
 Here contains the Game class that represents
 the game table and handles all events within one game
@@ -53,23 +56,23 @@ class Game:
         Guard,
     )
 
-    def __init__(self, bot, chat_id):
+    def __init__(self, bot, game_id):
         """
         Creates a new game
 
         :param bot:
             Bot, the bot that handles all the player-to-game interactions
-        :param chat_id:
-            int, telegam chat id where game occurs
+        :param game_id:
+            int, unique game id (also user_id of the game creator)
         """
 
+        self.id = game_id
         self.bot = bot
-        self.chat_id = chat_id
         self.users = Users()
-        self.started = False
         self.used_cards = []
         self.dealer = None
         self.victim = None
+        self.guess = None
         self.first_card = None
         self.can_choose_yourself = False
         self.card_without_action = False
@@ -77,8 +80,6 @@ class Game:
         self.state = 'not_started'
 
         self.deck = self.generate_deck()
-
-        self.bot.send_message(self.chat_id, _("Game is created"))
 
     def start(self):
         """
@@ -93,11 +94,6 @@ class Game:
         if self.state != 'not_started':
             raise RuntimeError('Trying to start a game, when it is already started')
 
-        if len(self.users) < 2:
-            self.bot.send_message(self.chat_id,
-                                  _("Not enough players, to play, you need at least 2 of them"))
-            return
-
         if self.double_deck:
             self.deck.extend(self.generate_deck())
 
@@ -107,16 +103,17 @@ class Game:
         self.users.shuffle()
         for user in self.users:
             user.take_card(self.deck)
-        self.started = True
-        self.state = 'change_turn'
-        users = _("The game is started!\n"
-                  "Players order (top moves first):\n")
+
+        message = _("The game is started!\n"
+                    "Players order (top moves first):\n")
+
         for num, user in enumerate(self.users):
             if num == 0:
-                users += '\t@{} <<\n'.format(user.name)
+                message += '\t@{} <<\n'.format(user.name)
             else:
-                users += '\t@{}\n'.format(user.name)
-        self.bot.send_message(self.chat_id, users)
+                message += '\t@{}\n'.format(user.name)
+
+        self.public_message(message)
 
         self.state = 'change_turn'
 
@@ -136,8 +133,6 @@ class Game:
         """
 
         if len(self.users) == 1 or not self.deck:
-            self.started = False
-
             players_remains = sorted(self.users, key=lambda user: user.card, reverse=True)
             winner = players_remains[0]
 
@@ -149,7 +144,7 @@ class Game:
                 message.append("#{} @{} - {} ({})\n".format(i+1, user.name, user.card,
                                                             user.card.value))
 
-            self.bot.send_message(self.chat_id, message)
+            self.public_message(message)
 
             self.bot.send_message(winner.user_id, _("Greetings! You've won!"))
             for user in self.users:
@@ -161,6 +156,7 @@ class Game:
             return
 
         self.state = 'change_turn'
+        self.start_turn()
 
     def start_turn(self):
         """
@@ -175,27 +171,26 @@ class Game:
         next state: select_card
         """
 
-        if self.state != 'change_turn' or not self.started:
+        if self.state != 'change_turn':
             raise RuntimeError('Trying to start a turn while not in change_turn state')
 
         self.dealer = self.users.get_dealer()
         self.dealer.defence = False
 
-        self.bot.send_message(self.chat_id, _("@{}'s turn").format(self.dealer.name))
+        self.public_message(_("@{}'s turn").format(self.dealer.name))
         self.dealer.take_new_card(self.deck)
 
         if self.deck:
-            self.bot.send_message(self.chat_id, _("It's {} cards left.").format(len(self.deck)))
+            self.public_message(_("It's {} cards left.").format(len(self.deck)))
         else:
-            self.bot.send_message(self.chat_id, _("Attention! It's the last turn"))
+            self.public_message(_("Attention! It's the last turn"))
 
         markup = types.ReplyKeyboardMarkup(row_width=2)
         button1 = types.KeyboardButton(self.dealer.card.name)
         button2 = types.KeyboardButton(self.dealer.new_card.name)
         markup.add(button1, button2)
 
-        self.bot.send_message(self.dealer.private_chat, _("Choose a card which you want to play:"),
-                              reply_markup=markup)
+        self.dealer_message(_("Choose a card which you want to play:"), markup)
 
         self.state = 'select_card'
 
@@ -218,8 +213,7 @@ class Game:
 
         if card_name in [_("Prince"), _("King")] and (isinstance(self.dealer.card, Countess) or
                                                       isinstance(self.dealer.new_card, Countess)):
-            self.bot.send_message(self.dealer.user_id,
-                                  _("Woopsy-daisy... You need to drop a countess."))
+            self.dealer_message(_("Woopsy-daisy... You need to drop a countess."))
             return
 
         if card_name != self.dealer.new_card.name:
@@ -239,9 +233,7 @@ class Game:
                 markup.add(button)
 
             if not self.card_without_action:
-                self.bot.send_message(self.dealer.private_chat,
-                                      _("Choose the player you want play this card with:"),
-                                      reply_markup=markup)
+                self.dealer_message(_("Choose the player you want play this card with:"), markup)
                 return
 
         active_card = self.dealer.new_card
@@ -278,18 +270,16 @@ class Game:
             return
 
         if isinstance(self.dealer.new_card, Guard):
-            self.state = 'guess_card'
-
             markup = types.ReplyKeyboardMarkup()
 
             for card in Game.card_types[:-1]:
                 button = types.KeyboardButton(card.name)
                 markup.add(button)
 
-            self.bot.send_message(self.dealer.user_id,
-                                  _("Guess the @{}'s card:").format(self.victim.name),
-                                  reply_markup=markup)
+            self.dealer_message(_("Guess the @{}'s card:").format(self.victim.name), markup)
+            self.state = 'guess_card'
             return
+
         self.state = 'change_turn'
 
         active_card = self.dealer.new_card
@@ -328,18 +318,55 @@ class Game:
         :return:
             list, list of victims
         """
-        list_of_victims = []
+        victims_list = []
         for user in self.users:
-            if not user.defence and user.user_id != self.dealer.user_id:
-                list_of_victims.append(user.name)
-        if isinstance(self.dealer.new_card, Prince) or len(list_of_victims) == 0:
-            list_of_victims.append(self.dealer.name)
+            if not user.defence and user != self.dealer:
+                victims_list.append(user.name)
+
+        if isinstance(self.dealer.new_card, Prince) or len(victims_list) == 0:
+            victims_list.append(self.dealer.name)
+
             if not isinstance(self.dealer.new_card, Prince):
                 self.card_without_action = True
             else:
                 self.can_choose_yourself = True
 
-        return list_of_victims
+        return victims_list
+
+    def public_message(self, message, markup=None):
+        """
+        sends message to all users in this game
+
+        :param message:
+            message to be sent
+        :param markup:
+            markup with helper buttons
+        """
+
+        for user in self.users:
+            self.bot.send_message(user.user_id, message, reply_markup=markup)
+
+    def dealer_message(self, message, markup=None):
+        """
+        sends message to dealer
+
+        :param message:
+            message to be sent
+        :param markup:
+            markup with helper buttons
+        """
+        self.bot.send_message(self.dealer.user_id, message, reply_markup=markup)
+
+    def victim_message(self, message, markup=None):
+        """
+        sends message to victim
+
+        :param message:
+           message to be sent
+        :param markup:
+           markup with helper buttons
+        """
+        self.bot.send_message(self.victim.user_id, message, reply_markup=markup)
 
     @staticmethod
     def generate_deck():

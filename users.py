@@ -1,3 +1,6 @@
+# pylint: disable=undefined-variable
+# pylint: disable=import-error
+
 """
 Module contains classes that represents a players
 User and Users (see their docstrings for more)
@@ -8,6 +11,7 @@ from collections import deque
 import gettext
 
 gettext.install('loveletter', localedir='./locale', codeset='UTF-8')
+
 
 class User:
     """
@@ -48,7 +52,6 @@ class User:
 
         self.name = name
         self.user_id = user_id
-        self.private_chat = user_id
         self.bot = bot
         self.game = game
         self.card = None
@@ -68,7 +71,7 @@ class User:
         self.card = deck[-1]
         self.card.owner = self
         del deck[-1]
-        self.bot.send_message(self.private_chat, _("Your card is '{}'").format(self.card.name))
+        self.bot.send_message(self.user_id, _("Your card is '{}'").format(self.card.name))
 
     def take_new_card(self, deck):
         """
@@ -83,7 +86,7 @@ class User:
         self.new_card = deck[-1]
         self.new_card.owner = self
         del deck[-1]
-        self.bot.send_message(self.private_chat,
+        self.bot.send_message(self.user_id,
                               _("You have taken the '{}' card").format(self.new_card.name))
 
     def __eq__(self, other):

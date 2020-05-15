@@ -1,3 +1,6 @@
+# pylint: disable=undefined-variable
+# pylint: disable=import-error
+
 """
 module docstring
 """
@@ -87,35 +90,28 @@ class GameBot(telebot.TeleBot):
         def text_handler(message):
             self.text_handler(message)
 
-    def get_game(self, message):
+    def get_game(self, user_id):
         """
         Helper function to get game by chat_id
         where it is playing, if game not found returns None
 
-        :param chat_id:
-            int, id of the chat where game is played
+        :param user_id:
+            int, is of one of the players
         :return:
             Game, if game was created in chat with given id,
             else None
         """
-        logging.info(message.text)
+        if user_id not in self.users.keys():
+            self.send_message(
+                user_id,
+                _("You didn't join to any game yet, try send me a /create or /join <game_id>")
+            )
 
-        chat_id = message.chat.id
-        chat_type = message.chat.type
+            return None
 
-        if chat_type == 'private':
-            if chat_id not in self.users.keys():
-                self.send_message(chat_id, _("You didn't joined to any game yet"))
-                return None, None
-            game = self.users[chat_id].game
+        game = self.users[user_id].game
 
-        else:
-            if chat_id not in self.games.keys():
-                self.send_message(chat_id, _("There no game in this chat yet"))
-                return None, None
-            game = self.games[chat_id]
-
-        return game, chat_id
+        return game
 
     def show_help(self, message):
         """
@@ -146,16 +142,22 @@ class GameBot(telebot.TeleBot):
             telebot.types.Message, message that contains
             info about chat where it was written and user who wrote it
         """
-        chat_id = message.chat.id
+        user_id = message.from_user.id
+        user_name = message.from_user.username
 
-        if chat_id in self.games.keys():
-            self.send_message(chat_id,
-                              _("The game has been already created in this chat"))
-            return
+        if user_id in self.users.keys():
+            self.send_message(user_id,
+                              _("The game has been already created in this chat, restarting it"))
 
-        self.games[chat_id] = Game(self, chat_id)
+        game = Game(self, user_id)
+        user = User(user_name, user_id, self, game)
 
-        logging.info('Chat #%d: game created', chat_id)
+        game.users.add(user)
+        self.users[user_id] = user
+
+        self.send_message(user_id, _("Game is created, game id is `{}`").format(user_id),
+                          parse_mode='MarkdownV2')
+        logging.info('Chat #%d: game created', user_id)
 
     def double_deck(self, message):
         """
@@ -167,23 +169,26 @@ class GameBot(telebot.TeleBot):
             telebot.types.Message, message that contains
             info about chat where it was written and user who wrote it
         """
-        game, chat_id = self.get_game(message)
+        user_id = message.user.id
+        username = message.user.name
+
+        game = self.get_game(user_id)
 
         if not game:
             return
 
         if game.state != 'not_started':
-            self.send_message(chat_id, _("The game is already started"))
+            self.send_message(user_id, _("The game is already started"))
             return
 
         if not game.double_deck:
             game.double_deck = True
-            self.send_message(chat_id, _("The second deck is added"))
+            game.public_message(_("The second deck is added by @{}".format(username)))
         else:
             game.double_deck = False
-            self.send_message(chat_id, _("The second deck is removed"))
+            game.public_message(_("The second deck is removed by @{}".format(username)))
 
-        logging.info('Chat #%d: set doubledeck', chat_id)
+        logging.info('Chat #%d: set doubledeck', user_id)
 
     def join_user(self, message):
         """
@@ -193,36 +198,48 @@ class GameBot(telebot.TeleBot):
             telebot.types.Message, message that contains
             info about chat where it was written and user who wrote it
         """
-        game, chat_id = self.get_game(message)
+        text = message.text.split()
+        user_id = message.from_user.id
+        username = message.from_user.username or message.from_user.first_name
+
+        logging.info(text)
+
+        if len(text) < 2:
+            self.send_message(user_id, _("There is no game id, try /join <game id> or /create"))
+            return
+
+        if int(text[1]) not in self.users.keys():
+            self.send_message(user_id, _("There is no game with such id"))
+            return
+
+        game_id = int(text[1])
+
+        game = self.get_game(game_id)
 
         if not game:
             return
 
-        if game.started:
-            self.send_message(chat_id, _("Game has been already started"))
+        if game.state != 'not_started':
+            self.send_message(user_id, _("Game has been already started"))
             return
 
-        username = message.from_user.username or message.from_user.first_name
-        user_id = message.from_user.id
-
         if user_id in game.users:
-            self.send_message(chat_id, _("Player @{} already joined to game.").format(username))
+            self.send_message(user_id, _("You already joined to game {}").format(game.id))
             return
 
         user = User(username, user_id, self, game)
         self.users[user_id] = user
 
         game.users.add(user)
-        self.send_message(chat_id, 'Player @{} joined to game'.format(username))
+        game.public_message('Player @{} joined to game'.format(username))
 
         if game.users.num_users() == 6 and not game.double_deck:
             game.double_deck = True
-            self.send_message(
-                chat_id,
+            game.public_message(
                 _("The number of players reached 6, the second deck is automatically added")
             )
 
-        logging.info('Chat #%d: user #%d added', chat_id, user_id)
+        logging.info('Chat #%d: user #%d added', game.id, user_id)
 
     def start_game(self, message):
         """
@@ -234,15 +251,22 @@ class GameBot(telebot.TeleBot):
             telebot.types.Message, message that contains
             info about chat where it was written and user who wrote it
         """
-        game, chat_id = self.get_game(message)
+        user_id = message.from_user.id
+
+        game = self.get_game(user_id)
 
         if not game:
+            return
+
+        if len(game.users) < 2:
+            self.send_message(user_id,
+                              _("Not enough players, to play, you need at least 2 of them"))
             return
 
         game.start()
         game.start_turn()
 
-        logging.info("Chat #%d: game started", chat_id)
+        logging.info("Chat #%d: game started", user_id)
 
     def show_cards(self, message):
         """
@@ -252,16 +276,19 @@ class GameBot(telebot.TeleBot):
             telebot.types.Message, message that contains
             info about chat where it was written and user who wrote it
         """
-        game, chat_id = self.get_game(message)
+        user_id = message.from_user.id
+        game = self.get_game(user_id)
 
         if game is None:
             return
 
         used_cards = _("Dropped cards list:\n")
         unique_used_cards = np.unique(sorted(game.used_cards), return_counts=True)
+
         for num, card in enumerate(unique_used_cards[0]):
             used_cards += ' - {:10s} [{}]\n'.format(card.name, unique_used_cards[1][num])
-        self.send_message(chat_id, used_cards)
+
+        self.send_message(user_id, used_cards)
 
     def show_users(self, message):
         """
@@ -273,7 +300,8 @@ class GameBot(telebot.TeleBot):
             info about chat where it was written and user who wrote it
         :return:
         """
-        game, chat_id = self.get_game(message)
+        user_id = message.from_user.id
+        game = self.get_game(user_id)
 
         if not game:
             return
@@ -287,7 +315,7 @@ class GameBot(telebot.TeleBot):
                 users += '<<'
             users += '\n'
 
-        self.send_message(chat_id, users)
+        self.send_message(user_id, users)
 
     def text_handler(self, message):
         """
@@ -298,26 +326,30 @@ class GameBot(telebot.TeleBot):
             telebot.types.Message, message that contains
             info about chat where it was written and user who wrote it
         """
-        game, chat_id = self.get_game(message)
+        user_id = message.from_user.id
+        user_name = message.from_user.username
+        game = self.get_game(user_id)
 
         if not game:
             return
 
-        if game.dealer is None:
-            return
-
-        if chat_id == game.dealer.user_id:
+        if game.state != 'not_started' and user_id == game.dealer.user_id:
             if game.state == 'select_card' and \
                     message.text in [game.dealer.card.name, game.dealer.new_card.name]:
                 game.select_card(message.text)
+                return
 
             if (game.state == 'select_victim' and
                     (message.text in game.users.get_victims(game.dealer) or
                      game.can_choose_yourself and message.text == game.dealer.name)):
                 game.select_victim(message.text)
+                return
 
             if game.state == 'guess_card':
                 game.guess_card(message.text)
+                return
+
+        game.public_message('@{}: {}'.format(user_name, message.text))
 
 
 def main():

@@ -1,3 +1,6 @@
+# pylint: disable=undefined-variable
+# pylint: disable=import-error
+
 """
 Module that contains classes representing love letter's cards
 """
@@ -79,8 +82,7 @@ class Princess(Card):
         markup = types.ReplyKeyboardRemove(selective=False)
         message = _("@{} drops a Princess and loses.").format(self.owner.name)
 
-        game.bot.send_message(game.chat_id, message)
-        game.bot.send_message(self.owner.user_id, message, reply_markup=markup)
+        game.public_message(message, markup)
         game.used_cards.append(self.owner.card)
         game.users.kill(self.owner)
 
@@ -104,8 +106,7 @@ class Countess(Card):
         markup = types.ReplyKeyboardRemove(selective=False)
         message = _("@{} drops a Countess.").format(self.owner.name)
 
-        game.bot.send_message(game.chat_id, message)
-        game.bot.send_message(self.owner.user_id, message, reply_markup=markup)
+        game.public_message(message, markup)
 
 
 class King(Card):
@@ -130,8 +131,7 @@ class King(Card):
             message = \
                 _("@{} drops the King because all players are protected.").format(self.owner.name)
 
-            game.bot.send_message(game.chat_id, message)
-            game.bot.send_message(self.owner.user_id, message, reply_markup=markup)
+            game.public_message(message, markup)
 
             return
 
@@ -139,16 +139,15 @@ class King(Card):
             _("@{0} plays the King to exchange cards with @{1}.").format(self.owner.name,
                                                                          game.victim.name)
 
-        game.bot.send_message(game.chat_id, message)
-        game.bot.send_message(self.owner.user_id, message, reply_markup=markup)
+        game.public_message(message, markup)
 
         message = _("You've got a {0} from player @{1}").format(game.victim.card.name,
                                                                 game.victim.name)
-        game.bot.send_message(game.dealer.user_id, message)
+        game.dealer_message(message)
 
-        message = _("You've got a {0} from player @{1}").format(game.dealer.card.name.
+        message = _("You've got a {0} from player @{1}").format(game.dealer.card.name,
                                                                 game.dealer.name)
-        game.bot.send_message(game.victim.user_id, message)
+        game.victim_message(message)
 
         game.dealer.card.owner = game.victim
         game.victim.card.owner = game.dealer
@@ -180,8 +179,7 @@ class Prince(Card):
                         "@{1} drops a Princess and loses!").format(self.owner.name,
                                                                    game.victim.name)
 
-            game.bot.send_message(game.chat_id, message)
-            game.bot.send_message(self.owner.user_id, message, reply_markup=markup)
+            game.public_message(message, markup)
             game.users.kill(game.victim)
 
             return
@@ -191,8 +189,7 @@ class Prince(Card):
                                                                            game.victim.name,
                                                                            game.victim.card.name)
 
-        game.bot.send_message(game.chat_id, message)
-        game.bot.send_message(self.owner.user_id, message, reply_markup=markup)
+        game.public_message(message, markup)
 
         if not game.deck:
             game.deck.append(game.first_card)
@@ -219,8 +216,7 @@ class Maid(Card):
         markup = types.ReplyKeyboardRemove(selective=False)
         message = _("@{} is under Maid protection for a one full round.").format(self.owner.name)
 
-        game.bot.send_message(game.chat_id, message)
-        game.bot.send_message(self.owner.user_id, message, reply_markup=markup)
+        game.public_message(message, markup)
 
         self.owner.defence = True
 
@@ -248,8 +244,7 @@ class Baron(Card):
             message = \
                 _("@{} drops a Baron, because all players are protected.").format(self.owner.name)
 
-            game.bot.send_message(game.chat_id, message)
-            game.bot.send_message(self.owner.user_id, message, reply_markup=markup)
+            game.public_message(message, markup)
 
             return
 
@@ -258,8 +253,7 @@ class Baron(Card):
                         "@{1} has the {2} card").format(self.owner.name, game.victim.name,
                                                         game.victim.card.name)
 
-            game.bot.send_message(game.chat_id, message)
-            game.bot.send_message(self.owner.user_id, message, reply_markup=markup)
+            game.public_message(message, markup)
 
             game.used_cards.append(game.victim.card)
             game.users.kill(game.victim)
@@ -271,8 +265,7 @@ class Baron(Card):
                         "@{0} has the {2} card").format(self.owner.name, game.victim.name,
                                                         self.owner.card.name)
 
-            game.bot.send_message(game.chat_id, message)
-            game.bot.send_message(self.owner.user_id, message, reply_markup=markup)
+            game.public_message(message, markup)
 
             game.used_cards.append(self.owner.card)
             game.users.kill(self.owner)
@@ -284,8 +277,7 @@ class Baron(Card):
               "Looks like @{0} and @{1} have the same cards... ").format(self.owner.name,
                                                                          game.victim.name)
 
-        game.bot.send_message(game.chat_id, message)
-        game.bot.send_message(self.owner.user_id, message, reply_markup=markup)
+        game.public_message(message, markup)
 
 
 class Priest(Card):
@@ -308,21 +300,17 @@ class Priest(Card):
         if game.card_without_action:
             message = \
                 _("@{} drops Priest, because all players are protected.").format(self.owner.name)
-
-            game.bot.send_message(game.chat_id, message)
-            game.bot.send_message(self.owner.user_id, message, reply_markup=markup)
+            game.public_message(message, markup)
 
             return
 
         message = _("@{} uses a Priest card and looks at @{}'s card.").format(self.owner.name,
                                                                               game.victim.name)
-
-        game.bot.send_message(game.chat_id, message)
-        game.bot.send_message(self.owner.user_id, message, reply_markup=markup)
+        game.public_message(message, markup)
 
         message = _("@{} shows you his card. He(She) has the {}.").format(game.victim.name,
                                                                           game.victim.card.name)
-        game.bot.send_message(self.owner.user_id, message)
+        game.dealer_message(message)
 
 
 class Guard(Card):
@@ -347,9 +335,7 @@ class Guard(Card):
         if game.card_without_action:
             message = \
                 _("@{} drops the Guard, because all players are protected.").format(self.owner.name)
-
-            game.bot.send_message(game.chat_id, message)
-            game.bot.send_message(self.owner.user_id, message, reply_markup=markup)
+            game.public_message(message, markup)
 
             return
 
@@ -359,8 +345,7 @@ class Guard(Card):
                                                                               game.victim.name,
                                                                               game.guess)
 
-            game.bot.send_message(game.chat_id, message)
-            game.bot.send_message(self.owner.user_id, message, reply_markup=markup)
+            game.public_message(message, markup)
 
             game.used_cards.append(game.victim.card)
             game.users.kill(game.victim)
@@ -372,6 +357,4 @@ class Guard(Card):
               "@{1} holds the {2} card, but do not guess it right.").format(self.owner.name,
                                                                             game.victim.name,
                                                                             game.guess)
-
-        game.bot.send_message(game.chat_id, message)
-        game.bot.send_message(self.owner.user_id, message, reply_markup=markup)
+        game.public_message(message, markup)
