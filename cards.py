@@ -7,48 +7,39 @@ from telebot import types
 
 
 card_names = [
-    'Принцесса',
-    'Графиня',
-    'Король',
-    'Принц',
-    'Служанка',
-    'Барон',
-    'Священник',
-    'Стражница'
+    _("Princess"),
+    _("Countess"),
+    _("King"),
+    _("Prince"),
+    _("Maid"),
+    _("Baron"),
+    _("Priest"),
+    _("Guard")
 ]
 
 
 class Card:
     """
     An abstract class that represents the arbitrary card
+
+    :static attr name:
+        str, name of the card
+    :static attr value:
+        int, value of the card, the better card allows you to win in the end
+    :static attr targeted:
+        bool, checks if card needs to point another player as a target
+    :static attr num_in_deck:
+        int, number of cards of this type in standard deck
+    :attr owner:
+        User, player who holds this card right now
     """
 
-    def __init__(self, name, value, need_victim=False, need_guess=False):
-        """
-        Creates a card, used by inherited card classes
-        to create a card with specific name and value
+    name = None
+    value = None
+    targeted = None
+    num_in_deck = None
 
-        :param name:
-            str, name of the card, needs to
-            display in chat, which card is played right now
-        :param value:
-            int, value of the card, at end of the game
-            the player with largest card value is won
-        :param need_victim:
-            bool, checks if dealer needs to select another
-            player for which this card feature is applied
-        :param need_guess:
-            bool, checks if dealer needs to guess which
-            card is in victim's hands
-        :param owner:
-            User, owner of the card (who holding it right now)
-            or None if the card still lies in deck
-        """
-
-        self.name = name
-        self.value = value
-        self.need_victim = need_victim
-        self.need_guess = need_guess
+    def __init__(self):
         self.owner = None
 
     def play(self, game):
@@ -89,14 +80,16 @@ class Princess(Card):
     """
     # pylint: disable=too-few-public-methods
 
-    def __init__(self):
-        super().__init__(_("Princess"), 8)
+    name = _("Princess")
+    value = 8
+    targeted = False
+    num_in_deck = 1
 
     def play(self, game):
         markup = types.ReplyKeyboardRemove(selective=False)
         message = _("@{} drops a Princess and loses.").format(self.owner.name)
 
-        game.bot.send_message(game.group_chat, message)
+        game.bot.send_message(game.chat_id, message)
         game.bot.send_message(self.owner.user_id, message, reply_markup=markup)
         game.used_cards.append(self.owner.card)
         game.users.kill(self.owner)
@@ -112,14 +105,16 @@ class Countess(Card):
     """
     # pylint: disable=too-few-public-methods
 
-    def __init__(self):
-        super().__init__(_("Countess"), 7)
+    name = _("Countess")
+    value = 7
+    targeted = False
+    num_in_deck = 1
 
     def play(self, game):
         markup = types.ReplyKeyboardRemove(selective=False)
         message = _("@{} drops a Countess.").format(self.owner.name)
 
-        game.bot.send_message(game.group_chat,)
+        game.bot.send_message(game.chat_id, message)
         game.bot.send_message(self.owner.user_id, message, reply_markup=markup)
 
 
@@ -133,8 +128,10 @@ class King(Card):
     """
     # pylint: disable=too-few-public-methods
 
-    def __init__(self):
-        super().__init__(_("King"), 6, need_victim=True)
+    name = _("King")
+    value = 6
+    targeted = True
+    num_in_deck = 1
 
     def play(self, game):
         markup = types.ReplyKeyboardRemove(selective=False)
@@ -143,25 +140,30 @@ class King(Card):
             message = \
                 _("@{} drops the King because all players are protected.").format(self.owner.name)
 
-            game.bot.send_message(game.group_chat, message)
-            game.bot.send_message(self.owner.user_id, message, reply_markup=markup)
-        else:
-            message = \
-                _("@{0} plays the King to exchange cards with @{1}.").format(self.owner.name,
-                                                                             game.victim.name)
-
-            game.bot.send_message(game.group_chat, message)
+            game.bot.send_message(game.chat_id, message)
             game.bot.send_message(self.owner.user_id, message, reply_markup=markup)
 
-            message = _("You've got a {} from player @{}").format(game.victim.card.name,
-                                                                  game.victim.name)
+            return
 
-            game.bot.send_message(game.dealer.user_id, message)
-            game.bot.send_message(game.victim.user_id, message)
+        message = \
+            _("@{0} plays the King to exchange cards with @{1}.").format(self.owner.name,
+                                                                         game.victim.name)
 
-            game.dealer.card.owner = game.victim
-            game.victim.card.owner = game.dealer
-            game.dealer.card, game.victim.card = game.victim.card, game.dealer.card
+        game.bot.send_message(game.chat_id, message)
+        game.bot.send_message(self.owner.user_id, message, reply_markup=markup)
+
+        message = _("You've got a {0} from player @{1}").format(game.victim.card.name,
+                                                                game.victim.name)
+        game.bot.send_message(game.dealer.user_id, message)
+
+        message = _("You've got a {0} from player @{1}").format(game.dealer.card.name.
+                                                                game.dealer.name)
+        game.bot.send_message(game.victim.user_id, message)
+
+        game.dealer.card.owner = game.victim
+        game.victim.card.owner = game.dealer
+
+        game.dealer.card, game.victim.card = game.victim.card, game.dealer.card
 
 
 class Prince(Card):
@@ -174,8 +176,10 @@ class Prince(Card):
     """
     # pylint: disable=too-few-public-methods
 
-    def __init__(self):
-        super().__init__(_("Prince"), 5, need_victim=True)
+    name = _("Prince")
+    value = 5
+    targeted = True
+    num_in_deck = 2
 
     def play(self, game):
         markup = types.ReplyKeyboardRemove(selective=False)
@@ -186,9 +190,10 @@ class Prince(Card):
                         "@{1} drops a Princess and loses!").format(self.owner.name,
                                                                    game.victim.name)
 
-            game.bot.send_message(game.group_chat, message)
+            game.bot.send_message(game.chat_id, message)
             game.bot.send_message(self.owner.user_id, message, reply_markup=markup)
             game.users.kill(game.victim)
+
             return
 
         message = \
@@ -196,7 +201,7 @@ class Prince(Card):
                                                                            game.victim.name,
                                                                            game.victim.card.name)
 
-        game.bot.send_message(game.group_chat, message)
+        game.bot.send_message(game.chat_id, message)
         game.bot.send_message(self.owner.user_id, message, reply_markup=markup)
 
         if not game.deck:
@@ -215,14 +220,16 @@ class Maid(Card):
     """
     # pylint: disable=too-few-public-methods
 
-    def __init__(self):
-        super().__init__(_("Maid"), 4)
+    name = _("Maid")
+    value = 4
+    targeted = False
+    num_in_deck = 2
 
     def play(self, game):
         markup = types.ReplyKeyboardRemove(selective=False)
         message = _("@{} is under Maid protection for a one full round.").format(self.owner.name)
 
-        game.bot.send_message(game.group_chat, message)
+        game.bot.send_message(game.chat_id, message)
         game.bot.send_message(self.owner.user_id, message, reply_markup=markup)
 
         self.owner.defence = True
@@ -239,8 +246,10 @@ class Baron(Card):
     """
     # pylint: disable=too-few-public-methods
 
-    def __init__(self):
-        super().__init__(_("Baron"), 3, need_victim=True)
+    name = _("Baron")
+    value = 3
+    targeted = True
+    num_in_deck = 2
 
     def play(self, game):
         markup = types.ReplyKeyboardRemove(selective=False)
@@ -249,38 +258,44 @@ class Baron(Card):
             message = \
                 _("@{} drops a Baron, because all players are protected.").format(self.owner.name)
 
-            game.bot.send_message(game.group_chat, message)
+            game.bot.send_message(game.chat_id, message)
             game.bot.send_message(self.owner.user_id, message, reply_markup=markup)
-        else:
-            if self.owner.card > game.victim.card:
-                message = _("@{0} uses the Baron against @{1} and wins. "
-                            "@{1} has the {2} card").format(self.owner.name, game.victim.name,
-                                                            game.victim.card.name)
 
-                game.bot.send_message(game.group_chat, message)
-                game.bot.send_message(self.owner.user_id, message, reply_markup=markup)
+            return
 
-                game.used_cards.append(game.victim.card)
-                game.users.kill(game.victim)
+        if self.owner.card > game.victim.card:
+            message = _("@{0} uses the Baron against @{1} and wins. "
+                        "@{1} has the {2} card").format(self.owner.name, game.victim.name,
+                                                        game.victim.card.name)
 
-            elif self.owner.card < game.victim.card:
-                message = _("@{0} uses the Baron against @{1}, but looses. "
-                            "@{0} has the {2} card").format(self.owner.name, game.victim.name,
-                                                            self.owner.card.name)
+            game.bot.send_message(game.chat_id, message)
+            game.bot.send_message(self.owner.user_id, message, reply_markup=markup)
 
-                game.bot.send_message(game.group_chat, message)
-                game.bot.send_message(self.owner.user_id, message, reply_markup=markup)
+            game.used_cards.append(game.victim.card)
+            game.users.kill(game.victim)
 
-                game.used_cards.append(self.owner.card)
-                game.users.kill(self.owner)
-            else:
-                message = \
-                    _("Aaaand... here goes nothing"
-                      "Looks like @{0} and @{1} have the same cards... ").format(self.owner.name,
-                                                                                 game.victim.name)
+            return
 
-                game.bot.send_message(game.group_chat, message)
-                game.bot.send_message(self.owner.user_id, message, reply_markup=markup)
+        if self.owner.card < game.victim.card:
+            message = _("@{0} uses the Baron against @{1}, but looses. "
+                        "@{0} has the {2} card").format(self.owner.name, game.victim.name,
+                                                        self.owner.card.name)
+
+            game.bot.send_message(game.chat_id, message)
+            game.bot.send_message(self.owner.user_id, message, reply_markup=markup)
+
+            game.used_cards.append(self.owner.card)
+            game.users.kill(self.owner)
+
+            return
+
+        message = \
+            _("Aaaand... here goes nothing"
+              "Looks like @{0} and @{1} have the same cards... ").format(self.owner.name,
+                                                                         game.victim.name)
+
+        game.bot.send_message(game.chat_id, message)
+        game.bot.send_message(self.owner.user_id, message, reply_markup=markup)
 
 
 class Priest(Card):
@@ -292,8 +307,10 @@ class Priest(Card):
     """
     # pylint: disable=too-few-public-methods
 
-    def __init__(self):
-        super().__init__(_("Priest"), 2, need_victim=True)
+    name = _("Priest")
+    value = 2
+    targeted = True
+    num_in_deck = 2
 
     def play(self, game):
         markup = types.ReplyKeyboardRemove(selective=False)
@@ -302,7 +319,7 @@ class Priest(Card):
             message = \
                 _("@{} drops Priest, because all players are protected.").format(self.owner.name)
 
-            game.bot.send_message(game.group_chat, message)
+            game.bot.send_message(game.chat_id, message)
             game.bot.send_message(self.owner.user_id, message, reply_markup=markup)
 
             return
@@ -310,11 +327,11 @@ class Priest(Card):
         message = _("@{} uses a Priest card and looks at @{}'s card.").format(self.owner.name,
                                                                               game.victim.name)
 
-        game.bot.send_message(game.group_chat, message)
+        game.bot.send_message(game.chat_id, message)
         game.bot.send_message(self.owner.user_id, message, reply_markup=markup)
 
-        message = _("@{} показывает Вам свою карту. У него(нее) {}.").format(game.victim.name,
-                                                                             game.victim.card.name)
+        message = _("@{} shows you his card. He(She) has the {}.").format(game.victim.name,
+                                                                          game.victim.card.name)
         game.bot.send_message(self.owner.user_id, message)
 
 
@@ -329,8 +346,10 @@ class Guard(Card):
     """
     # pylint: disable=too-few-public-methods
 
-    def __init__(self):
-        super().__init__(_("Guard"), 1, need_victim=True, need_guess=True)
+    name = _("Guard")
+    value = 1
+    targeted = True
+    num_in_deck = 5
 
     def play(self, game):
         markup = types.ReplyKeyboardRemove(selective=False)
@@ -339,17 +358,18 @@ class Guard(Card):
             message = \
                 _("@{} drops the Guard, because all players are protected.").format(self.owner.name)
 
-            game.bot.send_message(game.group_chat, message)
+            game.bot.send_message(game.chat_id, message)
             game.bot.send_message(self.owner.user_id, message, reply_markup=markup)
 
             return
 
         if game.victim.card.name == game.guess:
-            message = '@{} использует Стражницу и угадывает что у @{} {}.'.format(self.owner.name,
-                                                                                  game.victim.name,
-                                                                                  game.guess)
+            message = \
+                _("@{} uses the Guard and guess that @{} has the {}.").format(self.owner.name,
+                                                                              game.victim.name,
+                                                                              game.guess)
 
-            game.bot.send_message(game.group_chat, message)
+            game.bot.send_message(game.chat_id, message)
             game.bot.send_message(self.owner.user_id, message, reply_markup=markup)
 
             game.used_cards.append(game.victim.card)
@@ -357,9 +377,11 @@ class Guard(Card):
 
             return
 
-        message = _("@{} использует Стражницу, предполагая "
-                    "что у @{} {}, но не угадывает.").format(self.owner.name, game.victim.name,
-                                                             game.guess)
+        message = \
+            _("@{0} uses Guard, assuming that "
+              "@{1} holds the {2} card, but do not guess it right.").format(self.owner.name,
+                                                                            game.victim.name,
+                                                                            game.guess)
 
-        game.bot.send_message(game.group_chat, message)
+        game.bot.send_message(game.chat_id, message)
         game.bot.send_message(self.owner.user_id, message, reply_markup=markup)

@@ -29,7 +29,7 @@ class User:
         is this user protected by 'Maid' card
     """
 
-    def __init__(self, name, user_id, bot):
+    def __init__(self, name, user_id, bot, game):
         """
         Creates a new user
         As soon as user can be created only
@@ -50,6 +50,7 @@ class User:
         self.user_id = user_id
         self.private_chat = user_id
         self.bot = bot
+        self.game = game
         self.card = None
         self.new_card = None
         self.defence = False
@@ -127,24 +128,15 @@ class Users:
         """
         random.shuffle(self.queue)
 
-    def next(self):
+    def get_dealer(self):
         """
-        Select next user from queue
+        Select next user (aka dealer) from queue and
+        moves it to the end of queue
         """
 
         user = self.queue.popleft()
         self.queue.append(user)
         return user
-
-    def __contains__(self, user):
-        """
-        Checks if given user is currently playing
-
-        :param user:
-            user to check if he is
-        """
-
-        return user in self.queue
 
     def kill(self, user):
         """
@@ -154,7 +146,7 @@ class Users:
             User, who loose the game
         """
 
-        user.bot.send_message(user.uid, _("You've lost!"))
+        user.bot.send_message(user.user_id, _("You've lost!"))
         self.queue.remove(user)
 
     def get_victims(self, dealer):
@@ -182,4 +174,24 @@ class Users:
             int, number of players
         """
 
+        return len(self.queue)
+
+    def find_by_name(self, name):
+        """
+        Finds user in queue by name
+
+        :param name:
+            A name to find user by
+        """
+        for user in self.queue:
+            if user.name == name:
+                return user
+
+    def __contains__(self, user):
+        return user in self.queue
+
+    def __iter__(self):
+        return iter(self.queue)
+
+    def __len__(self):
         return len(self.queue)

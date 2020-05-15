@@ -1,188 +1,326 @@
 import random
-from cards import *
+
+from itertools import chain
+from gettext import gettext as _
+
 from telebot import types
+
+from users import Users
+from cards import (
+    Princess,
+    Countess,
+    King,
+    Prince,
+    Maid,
+    Baron,
+    Priest,
+    Guard
+)
 
 
 class Game:
+    """
+    Class that handles one game, a virtual table if you prefer
+
+    Game has several states, running cycle is:
+
+    not_started (initial state) ─→ change_turn
+    change_turn ─→ select_card
+    select_card ┬→ select_victim (if card is targeted)
+                ├→ change_turn
+                └→ not_started (if game over)
+    select_victim ┬→ guess_card (if card is Guard)
+                  ├→ change_turn
+                  └→ not_started (if game over)
+    guess_card ┬→ change_turn
+               └→ not_started (if game over)
+    """
+
+    card_types = (
+        Princess,
+        Countess,
+        King,
+        Prince,
+        Maid,
+        Baron,
+        Priest,
+        Guard,
+    )
+
     def __init__(self, bot, chat_id):
+        """
+        Creates a new game
+
+        :param bot:
+            Bot, the bot that handles all the player-to-game interactions
+        :param chat_id:
+            int, telegam chat id where game occurs
+        """
+
         self.bot = bot
         self.chat_id = chat_id
         self.users = Users()
         self.started = False
-        self.deck = self.generate_deck()
         self.used_cards = []
         self.dealer = None
         self.victim = None
-        self.guess = None
         self.first_card = None
         self.can_choose_yourself = False
         self.card_without_action = False
         self.double_deck = False
-        self.state = 'change_turn'
-        self.bot.send_message(self.chat_id, 'Игра создана.')
+        self.state = 'not_started'
+
+        self.deck = self.generate_deck()
+
+        self.bot.send_message(self.chat_id, _("Game is created."))
 
     def start(self):
-        if len(self.users.users) < 2:
-            self.bot.send_message(self.chat_id, 'Слишком мало игроков, должно быть минимум 2.')
+        """
+        Starts a new game and deals the cards.
+        This method must be called after adding
+        all players to game and configuring it.
+
+        current_state: not_started
+        next_state: change_turn
+        """
+
+        if self.state != 'not_started':
+            raise RuntimeError('Trying to start a game, when it is already started')
+
+        if len(self.users) < 2:
+            self.bot.send_message(self.chat_id,
+                                  _("Not enough players, to play, you need at least 2 of them"))
             return
 
         if self.double_deck:
-            self.deck.extend(generate_deck())
+            self.deck.extend(self.generate_deck())
+
         random.shuffle(self.deck)
-        self.first_card = self.deck[-1]
-        del self.deck[-1]
+        self.first_card = self.deck.pop()
+
         self.users.shuffle()
-        for user in self.users.users:
+        for user in self.users:
             user.take_card(self.deck)
         self.started = True
         self.state = 'change_turn'
-        users = 'Игра началась.\nПорядок игроков:\n'
-        for num, user in enumerate(self.users.users):
+        users = _("The game is started!\n"
+                  "Players order (top moves first):\n")
+        for num, user in enumerate(self.users):
             if num == 0:
-                users += ' - {} <<\n'.format(user.name)
+                users += '\t@{} <<\n'.format(user.name)
             else:
-                users += ' - {}\n'.format(user.name)
+                users += '\t@{}\n'.format(user.name)
         self.bot.send_message(self.chat_id, users)
 
-    def check_end(self):
-        if len(self.users.users) == 1 or len(self.deck) == 0:
+        self.state = 'change_turn'
+
+    def is_game_over(self):
+        """
+        Checks if game is over
+
+        game ends if it is only one player left,
+        or there is no cards in deck.
+        If game is ended, sends game result to chat.
+        If game is not ended, starts a new turn
+
+        current state: any
+        next state:
+            game_over (if game ended)
+            change_turn (if game not ended)
+        """
+
+        if len(self.users) == 1 or not self.deck:
             self.started = False
-            cards = []
-            for user in self.users.users:
-                cards.append(user.card)
 
-            winner = max(cards).owner
+            players_remains = sorted(self.users, key=lambda user: user.card, reverse=True)
+            winner = players_remains[0]
 
-            results = 'Игра закончилась.\nПобедил {}\nОстались:\n'.format(winner.name)
-            for i, card in enumerate(reversed(sorted(cards))):
-                results += '{}. {} - {} ({})\n'.format(i+1, card.owner.name, card.name, card.value)
+            message = [_("Game is over\n"
+                         "Winner is {}\n"
+                         "Players remains\n").format(winner.name)]
 
+            for i, user in enumerate(players_remains):
+                message.append("#{} @{} - {} ({})\n".format(i+1, user.name, user.card,
+                                                            user.card.value))
 
-            self.bot.send_message(self.chat_id, results)
+            self.bot.send_message(self.chat_id, message)
 
-            self.bot.send_message(winner.uid, 'Вы выиграли!')
-            for user in self.users.users:
+            self.bot.send_message(winner.user_id, _("Greetings! You've won!"))
+            for user in self.users:
                 if user != winner:
-                    self.bot.send_message(user.uid, 'Вы проиграли!')
+                    self.bot.send_message(user.user_id, _("You loose!"))
+
+            self.state = 'game_over'
+
             return
 
+        state = 'change_turn'
         self.start_turn()
 
     def start_turn(self):
-        if self.state != 'change_turn' or not self.started:
-            return
+        """
+        Starts a player's turn
 
-        self.dealer = self.users.next()
+        If player has Maid's defence, removes it,
+        sends messages to chat about number of card left and
+        current player, make current dealer take new card
+        offers player to choose which card to play.
+
+        current state: change_turn
+        next state: select_card
+        """
+
+        if self.state != 'change_turn' or not self.started:
+            raise RuntimeError('Trying to start a turn while not in change_turn state')
+
+        self.dealer = self.users.get_dealer()
         self.dealer.defence = False
 
-        self.bot.send_message(self.chat_id, 'Ходит игрок @{}.'.format(self.dealer.name))
+        self.bot.send_message(self.chat_id, _("@{}'s turn").format(self.dealer.name))
         self.dealer.take_new_card(self.deck)
-        if len(self.deck) > 0:
-            self.bot.send_message(self.chat_id, 'В колоде осталось {} карт.'.format(len(self.deck)))
+
+        if self.deck:
+            self.bot.send_message(self.chat_id, _("It's {} cards left.").format(len(self.deck)))
         else:
-            self.bot.send_message(self.chat_id, 'Внимание! Последний ход.')
+            self.bot.send_message(self.chat_id, _("Attention! It's the last turn"))
 
         markup = types.ReplyKeyboardMarkup(row_width=2)
         button1 = types.KeyboardButton(self.dealer.card.name)
         button2 = types.KeyboardButton(self.dealer.new_card.name)
         markup.add(button1, button2)
 
+        self.bot.send_message(self.dealer.private_chat, _("Choose a card which you want to play:"),
+                              reply_markup=markup)
+
         self.state = 'select_card'
-        self.bot.send_message(self.dealer.private_chat, 'Выберите карту которой хотите сыграть:', reply_markup=markup)
 
-    def select_card(self, card_type):
+    def select_card(self, card_name):
+        """
+        Applies card features selected by user in game
+
+        If card is targeted, game changes state to select a victim,
+
+        :param card_name:
+            str, name of the card, which player want to play
+
+        current_state: select_card
+        next_state:
+            select_victim (if card is targeted)
+            change_turn (else)
+        """
         if self.state != 'select_card':
+            raise RuntimeError('Trying to select card while not in select_card state')
+
+        if card_name in [_("Prince"), _("King")] and (isinstance(self.dealer.card, Countess) or
+                                                      isinstance(self.dealer.new_card, Countess)):
+            self.bot.send_message(self.dealer.user_id,
+                                  _("Woopsy-daisy... You need to drop a countess."))
             return
 
-        if card_type in ['Принц', 'Король'] and 'Графиня' in [self.dealer.card.name, self.dealer.new_card.name]:
-            self.bot.send_message(self.dealer.uid, 'Ай-ай-ай... Необходимо скинуть графиню.')
-            return
-
-        if card_type != self.dealer.new_card.name:
+        if card_name != self.dealer.new_card.name:
             self.dealer.new_card, self.dealer.card = self.dealer.card, self.dealer.new_card
-        
-        if self.dealer.new_card.need_victim:
+
+        if self.dealer.new_card.targeted:
             self.state = 'select_victim'
 
             self.can_choose_yourself = False
             self.card_without_action = False
+
             markup = types.ReplyKeyboardMarkup()
-            possible_victims = self.list_of_possible_victims()
+            possible_victims = self.list_possible_victims()
+
             for user_name in possible_victims:
                 button = types.KeyboardButton(user_name)
                 markup.add(button)
 
             if not self.card_without_action:
                 self.bot.send_message(self.dealer.private_chat,
-                                      'Выберите, против кого использовать карту:', reply_markup=markup)
+                                      _("Choose the player you want play this card with:"),
+                                      reply_markup=markup)
                 return
 
-        self.state = 'change_turn'
-
         active_card = self.dealer.new_card
+
         self.dealer.new_card = None
         self.used_cards.append(active_card)
-        active_card.activate(self)
-        self.check_end()
+
+        active_card.play(self)
+
+        self.state = 'change_turn'
+        self.is_game_over()
 
     def select_victim(self, victim_name):
+        """
+
+        :param victim_name:
+        :return:
+        """
+
         if self.state != 'select_victim':
-            return
-        
-        for user in self.users.users:
-            if user.name == victim_name:
-                self.victim = user
+            raise RuntimeError("Trying to select a victim, while not in select_victim state")
+
+        self.victim = self.users.find_by_name(victim_name)
 
         if self.card_without_action:
-            self.state = 'change_turn'
-
             active_card = self.dealer.new_card
             self.dealer.new_card = None
             self.used_cards.append(active_card)
-            active_card.activate(self)
-            self.check_end()
-        else:
-            if self.dealer.new_card.need_guess:
-                self.state = 'guess_card'
+            active_card.play(self)
+            self.is_game_over()
 
-                markup = types.ReplyKeyboardMarkup()
-                for card in card_names[:-1]:
-                    button = types.KeyboardButton(card)
-                    markup.add(button)
-                self.bot.send_message(self.dealer.private_chat,
-                                      'Угадайте карту @{}:'.format(self.victim.name), reply_markup=markup)
-                return
             self.state = 'change_turn'
 
-            active_card = self.dealer.new_card
-            self.dealer.new_card = None
-            self.used_cards.append(active_card)
-            active_card.activate(self)
-            self.check_end()
+            return
 
-    def guess_card(self, guess):
-        if self.state != 'guess_card':
+        if isinstance(self.dealer.new_card, Guard):
+            self.state = 'guess_card'
+
+            markup = types.ReplyKeyboardMarkup()
+
+            for card in Game.card_types[:-1]:
+                button = types.KeyboardButton(card.name)
+                markup.add(button)
+
+            self.bot.send_message(self.dealer.user_id,
+                                  _("Guess the @{}'s card:").format(self.victim.name),
+                                  reply_markup=markup)
             return
         self.state = 'change_turn'
 
-        self.guess = guess
         active_card = self.dealer.new_card
         self.dealer.new_card = None
         self.used_cards.append(active_card)
-        active_card.activate(self)
-        self.check_end()
 
-    def end(self):
-        self.started = False
+        active_card.play(self)
+        self.is_game_over()
 
-    def list_of_possible_victims(self):
+    def guess_card(self, guess):
+        """
+
+        :param guess:
+        :return:
+        """
+
+        if self.state != 'guess_card':
+            raise RuntimeError('Guessing card while not in guess state')
+
+        active_card = self.dealer.new_card
+        self.dealer.new_card = None
+        self.used_cards.append(active_card)
+
+        self.guess = guess
+        active_card.play(self)
+
+        self.is_game_over()
+
+    def list_possible_victims(self):
         list_of_victims = []
-        for user in self.users.users:
-            if not user.defence and user.uid != self.dealer.uid:
-                    list_of_victims.append(user.name)
-        if self.dealer.new_card == 'Принц' or len(list_of_victims) == 0:
+        for user in self.users:
+            if not user.defence and user.user_id != self.dealer.user_id:
+                list_of_victims.append(user.name)
+        if isinstance(self.dealer.new_card, Prince) or len(list_of_victims) == 0:
             list_of_victims.append(self.dealer.name)
-            if self.dealer.new_card != 'Принц':
+            if not isinstance(self.dealer.new_card, Prince):
                 self.card_without_action = True
             else:
                 self.can_choose_yourself = True
@@ -191,17 +329,7 @@ class Game:
 
     @staticmethod
     def generate_deck():
-        return [
-            Princess(),
-            Countess(),
-            King(),
-            Prince(),
-            Prince(),
-            Maid(),
-            Maid(),
-            Baron(),
-            Baron(),
-            Priest(),
-            Priest(),
-            *(Guard() for i in range(5))
-        ]
+        return list(chain(*[
+            [Card() for _ in range(Card.num_in_deck)]
+            for Card in Game.card_types
+        ]))

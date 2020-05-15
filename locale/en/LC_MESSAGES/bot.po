@@ -1,0 +1,74 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2020-05-14 11:58+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: bot.py:99 bot.py:308
+msgid "There no game in this chat yet"
+msgstr ""
+
+#: bot.py:113
+msgid "help"
+msgstr "/help - shows this message\n\
+/rules - rules of this game\n\
+/hint - gives a small hint about cards\n\
+/create - creates a new game in this chat\n\
+/join - add user who sent this message to game\n\
+/start - starts a game after all configurations\n\
+/cards - shows all cards that are already played\n\
+/players - shows list of players\n\
+/doubledeck - adds second deck to the game, more players - more cards - more fun!"
+
+#: bot.py:124
+msgid "hints"
+msgstr ""
+
+#: bot.py:139
+msgid "The game has been already created in this chat, restart it?"
+msgstr ""
+
+#: bot.py:161
+msgid "The game is already started"
+msgstr ""
+
+#: bot.py:166
+msgid "The second deck is added"
+msgstr ""
+
+#: bot.py:169
+msgid "The second deck is removed"
+msgstr ""
+
+#: bot.py:186
+msgid "Game has been already started"
+msgstr ""
+
+#: bot.py:193
+msgid "Player @{} already joined to game."
+msgstr ""
+
+#: bot.py:203
+msgid "The number of players reached 6, the second deck is automatically added"
+msgstr ""
+
+#: bot.py:239
+msgid "Dropped cards list:\n"
+msgstr ""
+
+#: bot.py:261
+msgid "Players remained: \n"
+msgstr ""

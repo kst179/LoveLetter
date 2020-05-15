@@ -1,7 +1,9 @@
 """
 module docstring
 """
-from gettext import gettext as _
+import gettext
+import logging
+import sys
 
 import telebot
 from telebot import types
@@ -10,7 +12,6 @@ import numpy as np
 
 from game import Game
 from users import User
-from cards import card_names
 import config
 
 
@@ -34,6 +35,7 @@ class GameBot(telebot.TeleBot):
         """
         super().__init__(token)
         self.games = {}
+        self.users = {}
         self.register_handlers()
 
     def register_handlers(self):
@@ -108,24 +110,9 @@ class GameBot(telebot.TeleBot):
             telebot.types.Message, message that contains
             info about chat where it was written and user who wrote it
         """
+        print(message.chat.type)
 
-        hints = '''
-/help - показывает это сообщение
-
-/rules - правила игры (TODO)
-/hint - карточка с кратким описанием и стоимостью карт
-
-/create - создает полностью новую игру с пустым списком игроков
-/join - добавляет игрока в игру
-/start - после добавления всех игроков начинает игру
-/newround - перезапускает игру с теми же игроками и настройками (TODO)
-
-/cards - показывает все сброшенные с рук карты
-/players - показывает всех оставшихся в игре игроков
-
-/doubledeck - играть в 2 колоды: больше карт, больше народу, больше веселья!
-        '''
-        self.send_message(message.chat.id, hints)
+        self.send_message(message.chat.id, _("help"))
 
     def show_hint(self, message):
         """
@@ -135,17 +122,8 @@ class GameBot(telebot.TeleBot):
             telebot.types.Message, message that contains
             info about chat where it was written and user who wrote it
         """
-        hints = '''
-8. Принцесса (x1) - если вы сбрасываете эту карту, оказываетесь вне игры
-7. Графиня (x1) - если на руке Принц или Король, то Графиню надо сбросить
-6. Король (x1) - скинув Короля обменяйтесь картами с одним из игроков
-5. Принц (x2) - выбранный вами игрок должен скинуть свою карту и взять новую
-4. Служанка (x2) - сбросив Служанку получаете защиту на следующий круг
-3. Барон (x2) - сравните свою карту с другим игроком, у кого значение меньше - тот вылетает из игры
-2. Священник (x2) - позволяет посмотреть карту другого игрока
-1. Стражница (x5) - назовите карту другого игрока (не стражницу), если угадаете - он вылетет из игры
-    '''
-        self.send_message(message.chat.id, hints)
+
+        self.send_message(message.chat.id, _("hints"))
 
     def create_game(self, message):
         """
@@ -165,6 +143,8 @@ class GameBot(telebot.TeleBot):
 
         self.games[chat_id] = Game(self, chat_id)
 
+        logging.info('Chat #{}: game created'.format(chat_id))
+
     def double_deck(self, message):
         """
         Toggles second set of cards,
@@ -181,7 +161,7 @@ class GameBot(telebot.TeleBot):
         if not game:
             return
 
-        if game.started:
+        if game.state != 'not_started':
             self.send_message(chat_id, _("The game is already started"))
             return
 
@@ -191,6 +171,8 @@ class GameBot(telebot.TeleBot):
         else:
             game.double_deck = False
             self.send_message(chat_id, _("The second deck is removed"))
+
+        logging.info('Chat #{}: set doubledeck'.format(chat_id))
 
     def join_user(self, message):
         """
@@ -217,7 +199,10 @@ class GameBot(telebot.TeleBot):
             self.send_message(chat_id, _("Player @{} already joined to game.").format(username))
             return
 
-        game.users.add(User(username, user_id, self))
+        user = User(username, user_id, self, game)
+        self.users[user_id] = user
+
+        game.users.add(user)
         self.send_message(chat_id, 'Player @{} joined to game'.format(username))
 
         if game.users.num_users() == 6 and not game.double_deck:
@@ -226,6 +211,8 @@ class GameBot(telebot.TeleBot):
                 chat_id,
                 _("The number of players reached 6, the second deck is automatically added")
             )
+
+        logging.info('Chat #{}: user #{} added'.format(chat_id, user_id))
 
     def start_game(self, message):
         """
@@ -246,6 +233,8 @@ class GameBot(telebot.TeleBot):
         game.start()
         game.start_turn()
 
+        logging.info("Chat #{}: game started".format(chat_id))
+
     def show_cards(self, message):
         """
         Shows all cards that was already played
@@ -260,7 +249,7 @@ class GameBot(telebot.TeleBot):
         if game is None:
             return
 
-        used_cards = 'Сброшенные карты:\n'
+        used_cards = _("Dropped cards list:\n")
         unique_used_cards = np.unique(sorted(game.used_cards), return_counts=True)
         for num, card in enumerate(unique_used_cards[0]):
             used_cards += ' - {:10s} [{}]\n'.format(card.name, unique_used_cards[1][num])
@@ -282,9 +271,9 @@ class GameBot(telebot.TeleBot):
         if not game:
             return
 
-        users = 'Оставшиеся игроки: \n'
+        users = _("Players remained: \n")
         for user in game.users.users:
-            users += ' - {} '.format(user.name)
+            users += ' - @{} '.format(user.name)
             if user.defence:
                 users += '^'
             if user == game.dealer:
@@ -302,9 +291,12 @@ class GameBot(telebot.TeleBot):
             telebot.types.Message, message that contains
             info about chat where it was written and user who wrote it
         """
-
         chat_id = message.chat.id
-        game = self.get_game(chat_id)
+
+        if message.chat.type == 'private':
+            game = self.users[chat_id].game
+        else:
+            game = self.get_game(chat_id)
 
         if not game:
             return
@@ -312,7 +304,7 @@ class GameBot(telebot.TeleBot):
         if game.dealer is None:
             return
 
-        if chat_id == game.dealer.uid:
+        if chat_id == game.dealer.user_id:
             if game.state == 'select_card' and \
                     message.text in [game.dealer.card.name, game.dealer.new_card.name]:
                 game.select_card(message.text)
@@ -322,10 +314,26 @@ class GameBot(telebot.TeleBot):
                      game.can_choose_yourself and message.text == game.dealer.name)):
                 game.select_victim(message.text)
 
-            if game.state == 'guess_card' and message.text in card_names[:-1]:
+            if game.state == 'guess_card':
                 game.guess_card(message.text)
 
 
 if __name__ == '__main__':
+    logging.basicConfig(
+        stream=sys.stdout,
+        level=logging.INFO,
+        format='[%(levelname)s:%(asctime)s %(filename)s:%(lineno)s] %(message)s',
+        datefmt='%Y-%m-%d %I:%M:%S'
+    )
+
+    gettext.install('bot', localedir='./locale', codeset='UTF-8')
+
+    logging.info("Bot started")
+
     bot = GameBot(config.token)
-    bot.polling(none_stop=True)
+    while True:
+        try:
+            bot.polling(none_stop=True)
+        except Exception as ex:
+            logging.error(ex)
+            raise ex
