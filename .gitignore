@@ -1,5 +1,7 @@
 *.idea
 venv
+dist
+build
 
 *.pyc
 
