@@ -12,8 +12,8 @@ import gettext
 
 from telebot import types
 
-from users import Users
-from cards import (
+from loveletter.users import Users
+from loveletter.cards import (
     Princess,
     Countess,
     King,
@@ -24,7 +24,7 @@ from cards import (
     Guard
 )
 
-gettext.install('loveletter', localedir='./locale', codeset='UTF-8')
+gettext.install('loveletter', localedir='./loveletter/locale', codeset='UTF-8')
 
 
 class Game:
@@ -56,9 +56,11 @@ class Game:
         Guard,
     )
 
-    def __init__(self, bot, game_id):
+    def __init__(self, bot):
         """
         Creates a new game
+
+        TODO This class has too many instances and needs to be broken into more abstract subclasses
 
         :param bot:
             Bot, the bot that handles all the player-to-game interactions
@@ -66,7 +68,6 @@ class Game:
             int, unique game id (also user_id of the game creator)
         """
 
-        self.id = game_id
         self.bot = bot
         self.users = Users()
         self.used_cards = []
@@ -117,6 +118,22 @@ class Game:
 
         self.state = 'change_turn'
 
+    def restart(self):
+        """
+        Restarts the game
+
+        current state: any
+        next state: not_started
+        """
+        self.users.reset()
+        self.deck = self.generate_deck()
+        self.used_cards = []
+
+        self.state = 'not_started'
+
+        self.start()
+        self.start_turn()
+
     def is_game_over(self):
         """
         Checks if game is over
@@ -141,10 +158,15 @@ class Game:
                          "Players remains\n").format(winner.name)]
 
             for i, user in enumerate(players_remains):
-                message.append("#{} @{} - {} ({})\n".format(i+1, user.name, user.card,
-                                                            user.card.value))
+                message.append("\t#{} @{} - {} ({})\n".format(i+1, user.name, user.card.name,
+                                                              user.card.value))
 
-            self.public_message(message)
+            message.append(_("Kicked off the game:\n"))
+
+            for i, user in enumerate(self.users.loosers):
+                message.append("\t@{}\n".format(user.name))
+
+            self.public_message(''.join(message))
 
             self.bot.send_message(winner.user_id, _("Greetings! You've won!"))
             for user in self.users:
@@ -333,7 +355,7 @@ class Game:
 
         return victims_list
 
-    def public_message(self, message, markup=None):
+    def public_message(self, message, markup=None, but=None):
         """
         sends message to all users in this game
 
@@ -341,9 +363,18 @@ class Game:
             message to be sent
         :param markup:
             markup with helper buttons
+        :param but:
+            int, user_id, who don't need a message
         """
 
         for user in self.users:
+            if but is not None and user == but:
+                continue
+            self.bot.send_message(user.user_id, message, reply_markup=markup)
+
+        for user in self.users.loosers:
+            if but is not None and user == but:
+                continue
             self.bot.send_message(user.user_id, message, reply_markup=markup)
 
     def dealer_message(self, message, markup=None):
@@ -370,6 +401,12 @@ class Game:
 
     @staticmethod
     def generate_deck():
+        """
+        Generates a standard deck of cards
+
+        :return:
+            list of Cards, the deck
+        """
         return list(chain(*[
             [Card() for _ in range(Card.num_in_deck)]
             for Card in Game.card_types

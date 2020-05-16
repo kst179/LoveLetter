@@ -14,10 +14,10 @@ import telebot
 
 import numpy as np
 
-from game import Game
-from users import User
+from loveletter.game import Game
+from loveletter.users import User
 
-gettext.install('loveletter', localedir='./locale', codeset='UTF-8')
+gettext.install('loveletter', localedir='./loveletter/locale', codeset='UTF-8')
 
 
 class GameBot(telebot.TeleBot):
@@ -41,6 +41,7 @@ class GameBot(telebot.TeleBot):
         super().__init__(token)
         self.games = {}
         self.users = {}
+        self.name2user = {}
         self.register_handlers()
 
     def register_handlers(self):
@@ -74,9 +75,17 @@ class GameBot(telebot.TeleBot):
         def join_user(message):
             self.join_user(message)
 
+        @self.message_handler(commands=['leave'])
+        def leave_game(message):
+            self.leave_game(message)
+
         @self.message_handler(commands=['start'])
         def start_game(message):
             self.start_game(message)
+
+        @self.message_handler(commands=['restart'])
+        def restart_game(message):
+            self.restart_game(message)
 
         @self.message_handler(commands=['cards'])
         def show_cards(message):
@@ -143,20 +152,30 @@ class GameBot(telebot.TeleBot):
             info about chat where it was written and user who wrote it
         """
         user_id = message.from_user.id
-        user_name = message.from_user.username
+        user_name = message.from_user.username or message.from_user.username
 
         if user_id in self.users.keys():
             self.send_message(user_id,
                               _("The game has been already created in this chat, restarting it"))
 
-        game = Game(self, user_id)
+        game = Game(self)
         user = User(user_name, user_id, self, game)
 
         game.users.add(user)
         self.users[user_id] = user
+        self.name2user[user_name] = user
 
-        self.send_message(user_id, _("Game is created, game id is `{}`").format(user_id),
-                          parse_mode='MarkdownV2')
+        self.send_message(user_id, _("Game is created, resend next message to your "
+                                     "freinds whith whom you would like to play").format(user_id))
+
+        print(self.get_me().username)
+        self.send_message(user_id,
+                          _("Player @{0} invites you to love letter game, "
+                            "send message <code>/join @{0}</code> here @{1} "
+                            "if you want accept it").format(user_name, self.get_me().username),
+                          parse_mode='HTML'
+                          )
+
         logging.info('Chat #%d: game created', user_id)
 
     def double_deck(self, message):
@@ -170,7 +189,7 @@ class GameBot(telebot.TeleBot):
             info about chat where it was written and user who wrote it
         """
         user_id = message.user.id
-        username = message.user.name
+        username = message.user.name or message.from_user.username
 
         game = self.get_game(user_id)
 
@@ -204,17 +223,20 @@ class GameBot(telebot.TeleBot):
 
         logging.info(text)
 
-        if len(text) < 2:
-            self.send_message(user_id, _("There is no game id, try /join <game id> or /create"))
+        if len(text) < 2 or not text[1].startswith('@'):
+            self.send_message(user_id, _("There is no username, try /join @username or /create"))
             return
 
-        if int(text[1]) not in self.users.keys():
-            self.send_message(user_id, _("There is no game with such id"))
+        friend_name = text[1][1:]
+
+        if friend_name not in self.name2user.keys():
+            self.send_message(user_id,
+                              _("There is no game with such player @{}").format(friend_name))
             return
 
-        game_id = int(text[1])
+        friend = self.name2user[friend_name]
 
-        game = self.get_game(game_id)
+        game = self.get_game(friend.user_id)
 
         if not game:
             return
@@ -224,11 +246,12 @@ class GameBot(telebot.TeleBot):
             return
 
         if user_id in game.users:
-            self.send_message(user_id, _("You already joined to game {}").format(game.id))
+            self.send_message(user_id, _("You already joined to game"))
             return
 
         user = User(username, user_id, self, game)
         self.users[user_id] = user
+        self.name2user[username] = user
 
         game.users.add(user)
         game.public_message('Player @{} joined to game'.format(username))
@@ -239,7 +262,38 @@ class GameBot(telebot.TeleBot):
                 _("The number of players reached 6, the second deck is automatically added")
             )
 
-        logging.info('Chat #%d: user #%d added', game.id, user_id)
+        logging.info('Chat #%d: user #%d added', friend.user_id, user_id)
+
+    def leave_game(self, message):
+        user_id = message.from_user.id
+
+        game = self.get_game(user_id)
+
+        if game is None:
+            return
+
+        user = self.users[user_id]
+
+        if user in game.users:
+            if game.state != 'not_started':
+                self.send_message(user_id, _("The game already started, you cannot leave!"))
+                return
+
+            game.users.queue.remove(user)
+
+            self.users.pop(user_id)
+            self.name2user.pop(user.name)
+
+            self.send_message(user_id, _("You left the game"))
+            return
+
+        if user in game.users.loosers:
+            game.users.loosers.remove(user)
+
+            self.users.pop(user_id)
+            self.name2user.pop(user.name)
+
+            self.send_message(user_id, _("You left the game"))
 
     def start_game(self, message):
         """
@@ -267,6 +321,26 @@ class GameBot(telebot.TeleBot):
         game.start_turn()
 
         logging.info("Chat #%d: game started", user_id)
+
+    def restart_game(self, message):
+        """
+        Restarts game
+
+        :param message:
+            telebot.types.Message, message that contains
+            info about chat where it was written and user who wrote it
+        """
+
+        user_id = message.from_user.id
+
+        game = self.get_game(user_id)
+
+        if not game:
+            return
+
+        game.restart()
+
+        logging.info("Chat #%d: game restarted", user_id)
 
     def show_cards(self, message):
         """
@@ -349,7 +423,7 @@ class GameBot(telebot.TeleBot):
                 game.guess_card(message.text)
                 return
 
-        game.public_message('@{}: {}'.format(user_name, message.text))
+        game.public_message('@{}: {}'.format(user_name, message.text), but=user_id)
 
 
 def main():
@@ -375,7 +449,7 @@ def main():
 
     if token is None:
         if 'LOVELETTER_TOKEN' not in os.environ:
-            raise RuntimeError('You need specify token first via argument --')
+            raise RuntimeError('No token specified')
 
         token = os.environ['LOVELETTER_TOKEN']
 

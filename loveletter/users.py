@@ -10,7 +10,7 @@ import random
 from collections import deque
 import gettext
 
-gettext.install('loveletter', localedir='./locale', codeset='UTF-8')
+gettext.install('loveletter', localedir='./loveletter/locale', codeset='UTF-8')
 
 
 class User:
@@ -107,6 +107,8 @@ class Users:
     :attr queue:
         deque of Users, users who currently playing the game
         and do not lost yet
+    :attr loosers:
+        players who was kicked from the game
     """
 
     def __init__(self):
@@ -115,6 +117,7 @@ class Users:
         """
 
         self.queue = deque()
+        self.loosers = []
 
     def add(self, user):
         """
@@ -151,6 +154,7 @@ class Users:
 
         user.bot.send_message(user.user_id, _("You've lost!"))
         self.queue.remove(user)
+        self.loosers.append(user)
 
     def get_victims(self, dealer):
         """
@@ -189,6 +193,18 @@ class Users:
         for user in self.queue:
             if user.name == name:
                 return user
+
+        return None
+
+    def reset(self):
+        """
+        Resets all lost users back to queue
+        """
+
+        self.queue.extend(self.loosers)
+        self.loosers = []
+
+        self.shuffle()
 
     def __contains__(self, user):
         return user in self.queue
