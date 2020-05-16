@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-05-15 22:22+0300\n"
+"POT-Creation-Date: 2020-05-16 16:34+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,198 +17,237 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: bot.py:108
-msgid "You didn't joined to any game yet"
-msgstr "Вы еще не присоединилсись к игре"
+#: loveletter/bot.py:116
+msgid ""
+"You didn't join to any game yet, try send me a /create or /join <game_id>"
+msgstr "Вы еще не присоедиились ни к одной игре. Напишите мне /create или /join @username,"
+"чтобы создать игру или присоединиться к ней"
 
-#: bot.py:114
-msgid "There no game in this chat yet"
-msgstr "В этом чате еще не создана игра"
-
-#: bot.py:129
+#: loveletter/bot.py:134
 msgid "help"
-msgstr "/help - показывает это сообщение\n\n\
-/rules - правила игры (TODO)\n\
-/hint - карточка с кратким описанием и стоимостью карт\n\n\
-/create - создает полностью новую игру с пустым списком игроков\n\
-/join - добавляет игрока в игру\n\
-/start - после добавления всех игроков начинает игру\n\
-/newround - перезапускает игру с теми же игроками и настройками (TODO)\n\n\
-/cards - показывает все сброшенные с рук карты\n\
-/players - показывает всех оставшихся в игре игроков\n\n\
-/doubledeck - играть в 2 колоды: больше карт, больше народу, больше веселья!"
+msgstr ""
+"/help - показывает это сообщение\n"
+"\n"
+"/rules - правила игры (TODO)\n"
+"/hint - карточка с кратким описанием и стоимостью карт\n"
+"\n"
+"/create - создает полностью новую игру с пустым списком игроков\n"
+"/join - добавляет игрока в игру\n"
+"/start - после добавления всех игроков начинает игру\n"
+"/newround - перезапускает игру с теми же игроками и настройками (TODO)\n"
+"\n"
+"/cards - показывает все сброшенные с рук карты\n"
+"/players - показывает всех оставшихся в игре игроков\n"
+"\n"
+"/doubledeck - играть в 2 колоды: больше карт, больше народу, больше веселья!"
 
-#: bot.py:139
+#: loveletter/bot.py:144
 msgid "hints"
-msgstr "8. Принцесса (x1) - если вы сбрасываете эту карту, оказываетесь вне игры\n\
-7. Графиня (x1) - если на руке Принц или Король, то Графиню надо сбросить\n\
-6. Король (x1) - скинув Короля обменяйтесь картами с одним из игроков\n\
-5. Принц (x2) - выбранный вами игрок должен скинуть свою карту и взять новую\n\
-4. Служанка (x2) - сбросив Служанку получаете защиту на следующий круг\n\
-3. Барон (x2) - сравните свою карту с другим игроком, у кого значение меньше - тот вылетает из игры\n\
-2. Священник (x2) - позволяет посмотреть карту другого игрока\n\
-1. Стражница (x5) - назовите карту другого игрока (не стражницу), если угадаете - он вылетет из игры"
+msgstr ""
+"8. Принцесса (x1) - если вы сбрасываете эту карту, оказываетесь вне игры\n"
+"7. Графиня (x1) - если на руке Принц или Король, то Графиню надо сбросить\n"
+"6. Король (x1) - скинув Короля обменяйтесь картами с одним из игроков\n"
+"5. Принц (x2) - выбранный вами игрок должен скинуть свою карту и взять "
+"новую\n"
+"4. Служанка (x2) - сбросив Служанку получаете защиту на следующий круг\n"
+"3. Барон (x2) - сравните свою карту с другим игроком, у кого значение меньше "
+"- тот вылетает из игры\n"
+"2. Священник (x2) - позволяет посмотреть карту другого игрока\n"
+"1. Стражница (x5) - назовите карту другого игрока (не стражницу), если "
+"угадаете - он вылетет из игры"
 
-#: bot.py:153
-msgid "The game has been already created in this chat"
-msgstr "В этом чате игра уже создана"
+#: loveletter/bot.py:159
+msgid "The game has been already created in this chat, restarting it"
+msgstr "В этом чате игра уже была создана, перезапускаю ее"
 
-#: bot.py:176
+#: loveletter/bot.py:168
+msgid ""
+"Game is created, resend next message to your freinds whith whom you would "
+"like to play"
+msgstr "Игра создана, разошлите следующее сообщение, тем с кем хотите сыграть:"
+
+#: loveletter/bot.py:173
+#, python-brace-format
+msgid ""
+"Player @{0} invites you to love letter game, send message <code>/join @{0}</"
+"code> here @{1} if you want accept it"
+msgstr "Игрок @{0} приглашает Вас в игру Тайное послание, для того чтобы присоединиться "
+"напишите <code>/join @{0}</code> боту @{1}"
+
+#: loveletter/bot.py:200
 msgid "The game is already started"
 msgstr "Игра еще не началась"
 
-#: bot.py:181
-msgid "The second deck is added"
-msgstr "Добавлена вторая колода"
+#: loveletter/bot.py:205
+msgid "The second deck is added by @{}"
+msgstr "Вторая колода добавлена игроком @{}"
 
-#: bot.py:184
-msgid "The second deck is removed"
-msgstr "Вторая колода убрана"
+#: loveletter/bot.py:208
+msgid "The second deck is removed by @{}"
+msgstr "Вторая колода убрана игроком @{}"
 
-#: bot.py:202
+#: loveletter/bot.py:227
+msgid "There is no username, try /join @username or /create"
+msgstr "Не хватает никнейма пользователя, попробуйте /join @username или /create"
+
+#: loveletter/bot.py:234
+msgid "There is no game with such player @{}"
+msgstr "Не существует игры в которой был бы игрок @{}"
+
+#: loveletter/bot.py:245
 msgid "Game has been already started"
 msgstr "Игра еще не началась"
 
-#: bot.py:209
-msgid "Player @{} already joined to game."
-msgstr "Игрок @{} уже присоединился к игре"
+#: loveletter/bot.py:249
+msgid "You already joined to game"
+msgstr "Вы уже присоединились к игре"
 
-#: bot.py:222
+#: loveletter/bot.py:262
 msgid "The number of players reached 6, the second deck is automatically added"
 msgstr "Число игроков достигло шести, добавлена вторая колода"
 
-#: bot.py:260
+#: loveletter/bot.py:279
+msgid "The game already started, you cannot leave!"
+msgstr "Игра уже началась, вы не можете уйти!"
+
+#: loveletter/bot.py:287 loveletter/bot.py:296
+msgid "You left the game"
+msgstr "Вы покинули игру"
+
+#: loveletter/bot.py:317
+msgid "Not enough players, to play, you need at least 2 of them"
+msgstr "Не достаточно игроков, требуется минимум 2 чтобы начать игру"
+
+#: loveletter/bot.py:359
 msgid "Dropped cards list:\n"
 msgstr "Список карт в сбросе:\n"
 
-#: bot.py:281
+#: loveletter/bot.py:383
 msgid "Players remained: \n"
 msgstr "Оставшиеся игроки: \n"
 
-#: cards.py:71
+#: loveletter/cards.py:77
 msgid "Princess"
 msgstr "Принцесса"
 
-#: cards.py:78
+#: loveletter/cards.py:84
 msgid "@{} drops a Princess and loses."
 msgstr "@{} скидывает Принцессу и проигрывает"
 
-#: cards.py:96
+#: loveletter/cards.py:101
 msgid "Countess"
 msgstr "Графиня"
 
-#: cards.py:103
+#: loveletter/cards.py:108
 msgid "@{} drops a Countess."
 msgstr "@{} скидывает графиню"
 
-#: cards.py:119 game.py:218
+#: loveletter/cards.py:123 loveletter/game.py:236
 msgid "King"
 msgstr "Король"
 
-#: cards.py:129
+#: loveletter/cards.py:133
 msgid "@{} drops the King because all players are protected."
 msgstr "@{} скидывает Короля потому что все игроки защищенны"
 
-#: cards.py:137
+#: loveletter/cards.py:140
 #, python-brace-format
 msgid "@{0} plays the King to exchange cards with @{1}."
 msgstr "@{0} использует Короля чтобы обменяться картами с @{1}"
 
-#: cards.py:143 cards.py:147
+#: loveletter/cards.py:145 loveletter/cards.py:149
 #, python-brace-format
 msgid "You've got a {0} from player @{1}"
 msgstr "Вы получили карту {0} от @{1}"
 
-#: cards.py:167 game.py:218
+#: loveletter/cards.py:169 loveletter/game.py:236
 msgid "Prince"
 msgstr "Принц"
 
-#: cards.py:177
+#: loveletter/cards.py:179
 #, python-brace-format
 msgid "@{0} uses Prince against @{1}. @{1} drops a Princess and loses!"
-msgstr "@{0} использет карту Принца на @{1}. @{1} скидывает Принцессу и проигрывает!"
+msgstr ""
+"@{0} использет карту Принца на @{1}. @{1} скидывает Принцессу и проигрывает!"
 
-#: cards.py:188
+#: loveletter/cards.py:189
 #, python-brace-format
 msgid "@{0} uses a Prince against @{1}. @{1} has the {2}."
 msgstr "@{0} использует карту Принца на игрока @{1}. У @{1} была карта {2}"
 
-#: cards.py:211
+#: loveletter/cards.py:211
 msgid "Maid"
 msgstr "Служанка"
 
-#: cards.py:218
+#: loveletter/cards.py:218
 msgid "@{} is under Maid protection for a one full round."
 msgstr "@{} защищен Служанкой в течение круга"
 
-#: cards.py:237
+#: loveletter/cards.py:236
 msgid "Baron"
 msgstr "Барон"
 
-#: cards.py:247
+#: loveletter/cards.py:246
 msgid "@{} drops a Baron, because all players are protected."
-msgstr "@{} скидывает Барона впустую, потому что все остальные игроки защищены Служанками"
+msgstr ""
+"@{} скидывает Барона впустую, потому что все остальные игроки защищены "
+"Служанками"
 
-#: cards.py:255
+#: loveletter/cards.py:253
 #, python-brace-format
 msgid "@{0} uses the Baron against @{1} and wins. @{1} has the {2} card"
 msgstr "@{0} использует Барона против @{1} и выигрывает, у @{1} была карта {2}"
 
-#: cards.py:268
+#: loveletter/cards.py:265
 #, python-brace-format
 msgid "@{0} uses the Baron against @{1}, but looses. @{0} has the {2} card"
-msgstr "@{0} использует Барона против @{1}, но проигрывает у @{0} была карта {2}"
+msgstr ""
+"@{0} использует Барона против @{1}, но проигрывает у @{0} была карта {2}"
 
-#: cards.py:281
+#: loveletter/cards.py:277
 #, python-brace-format
 msgid ""
 "Aaaand... here goes nothingLooks like @{0} and @{1} have the same cards... "
-msgstr "Иииии... ничего не происходит. Похоже у @{0} и @{1} картый одинаковые..."
+msgstr ""
+"Иииии... ничего не происходит. Похоже у @{0} и @{1} картый одинаковые..."
 
-#: cards.py:298
+#: loveletter/cards.py:293
 msgid "Priest"
 msgstr "Священник"
 
-#: cards.py:308
+#: loveletter/cards.py:303
 msgid "@{} drops Priest, because all players are protected."
 msgstr "@{} сбрасывает Священика впустую, так как все игроки защищены."
 
-#: cards.py:315
+#: loveletter/cards.py:308
 msgid "@{} uses a Priest card and looks at @{}'s card."
 msgstr "@{} использует карту Священника, чтобы подмотреть карту игрока @{}"
 
-#: cards.py:321
+#: loveletter/cards.py:312
 msgid "@{} shows you his card. He(She) has the {}."
 msgstr "@{} показывает вам свою карту. У него(неё) {}"
 
-#: cards.py:337
+#: loveletter/cards.py:328
 msgid "Guard"
 msgstr "Стражница"
 
-#: cards.py:347
+#: loveletter/cards.py:338
 msgid "@{} drops the Guard, because all players are protected."
 msgstr "@{} скидывает Стражницу, потому что все игроки защищены"
 
-#: cards.py:356
+#: loveletter/cards.py:345
 msgid "@{} uses the Guard and guess that @{} has the {}."
 msgstr "@{} использует Стражницу и угадывает, что у @{} {}"
 
-#: cards.py:369
+#: loveletter/cards.py:357
 #, python-brace-format
 msgid ""
 "@{0} uses Guard, assuming that @{1} holds the {2} card, but do not guess it "
 "right."
-msgstr "@{0} использует Стражницу, предполагая, что у @{1} {2}, но не угадывает"
+msgstr ""
+"@{0} использует Стражницу, предполагая, что у @{1} {2}, но не угадывает"
 
-#: game.py:80
-msgid "Game is created"
-msgstr "Игра создана"
-
-#: game.py:97
-msgid "Not enough players, to play, you need at least 2 of them"
-msgstr "Не достаточно игроков, требуется минимум 2 чтобы начать игру"
-
-#: game.py:111
+#: loveletter/game.py:108
 msgid ""
 "The game is started!\n"
 "Players order (top moves first):\n"
@@ -216,7 +255,7 @@ msgstr ""
 "Игра началась!\n"
 "Порядок игроков (верхний ходит первым)\n"
 
-#: game.py:143
+#: loveletter/game.py:156
 msgid ""
 "Game is over\n"
 "Winner is {}\n"
@@ -226,50 +265,60 @@ msgstr ""
 "Победитель {}\n"
 "Оставшиеся игроки\n"
 
-#: game.py:153
+#: loveletter/game.py:164
+msgid "Kicked off the game:\n"
+msgstr "Выбыли из игры:\n"
+
+#: loveletter/game.py:171
 msgid "Greetings! You've won!"
 msgstr "Поздравляем! Вы выиграли!"
 
-#: game.py:156
+#: loveletter/game.py:174
 msgid "You loose!"
 msgstr "Вы проиграли"
 
-#: game.py:183
+#: loveletter/game.py:202
 msgid "@{}'s turn"
 msgstr "Ход игрока @{}"
 
-#: game.py:187
+#: loveletter/game.py:206
 msgid "It's {} cards left."
 msgstr "Осталось {} карт"
 
-#: game.py:189
+#: loveletter/game.py:208
 msgid "Attention! It's the last turn"
 msgstr "Внимание! Последний ход"
 
-#: game.py:196
+#: loveletter/game.py:215
 msgid "Choose a card which you want to play:"
 msgstr "Выберите карту которой хотите сыграть"
 
-#: game.py:221
+#: loveletter/game.py:238
 msgid "Woopsy-daisy... You need to drop a countess."
 msgstr "Ай-ай-ай... Кажется надо таки сбросить Графиню"
 
-#: game.py:242
+#: loveletter/game.py:258
 msgid "Choose the player you want play this card with:"
 msgstr "Выберите игрока, на которого хотите применить действие карты:"
 
-#: game.py:289
+#: loveletter/game.py:301
 msgid "Guess the @{}'s card:"
 msgstr "Угадайте карту @{}"
 
-#: users.py:71
+#: loveletter/users.py:74
 msgid "Your card is '{}'"
 msgstr "Ваша карта '{}'"
 
-#: users.py:87
+#: loveletter/users.py:90
 msgid "You have taken the '{}' card"
 msgstr "Вы взяли карту '{}'"
 
-#: users.py:149
+#: loveletter/users.py:155
 msgid "You've lost!"
 msgstr "Вы проиграли"
+
+#~ msgid "You didn't joined to any game yet"
+#~ msgstr "Вы еще не присоединилсись к игре"
+
+#~ msgid "Game is created"
+#~ msgstr "Игра создана"
