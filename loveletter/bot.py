@@ -173,8 +173,7 @@ class GameBot(telebot.TeleBot):
                           _("Player @{0} invites you to love letter game, "
                             "send message <code>/join @{0}</code> here @{1} "
                             "if you want accept it").format(user_name, self.get_me().username),
-                          parse_mode='HTML'
-                          )
+                          parse_mode='HTML')
 
         logging.info('Chat #%d: game created', user_id)
 
