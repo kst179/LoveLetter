@@ -202,6 +202,10 @@ class Users:
         """
 
         self.queue.extend(self.loosers)
+
+        for user in self.queue:
+            user.defence = False
+
         self.loosers = []
 
         self.shuffle()
